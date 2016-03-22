@@ -6,9 +6,9 @@ typedef struct Async *async_p;
 extern struct __ASYNC_API__ {
     /**
      * @brief Create a new Async object (a thread pool)
-     *        a pointer using the `aync_p` (Async Pointer) type.
+     *        a pointer using the `async_p` (Async Pointer) type.
      * @param threads the number of new threads to be initialized
-     * @return a pointer using the `aync_p` (Async Pointer) type
+     * @return a pointer using the `async_p` (Async Pointer) type
      *
      * Use:
      * @code
