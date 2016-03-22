@@ -7,7 +7,7 @@ CFLAGS = -std=gnu99 -Wall -O2 -g
 LDFLAGS = -lpthread
 
 OBJS := \
-	libasync.o \
+	async.o \
 	main.o
 deps := $(OBJS:%.o=%.o.d)
 
