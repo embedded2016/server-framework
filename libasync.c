@@ -74,8 +74,8 @@ static int async_run(async_p async, void (*task)(void *), void *arg)
 {
     struct AsyncTask *c;  // c == container, this will store the task
 
-    if (!async || !task)
-        return -1;
+    if (!async || !task) return -1;
+
     pthread_mutex_lock(&(async->lock));
     /* get a container from the pool of grab a new container */
     if (async->pool) {
@@ -267,10 +267,8 @@ static async_p async_create(int threads)
     async->run = 1;
     /* create threads */
     for (async->count = 0; async->count < threads; async->count++) {
-        if (create_thread(
-                    async->threads + async->count,
-                    worker_thread_cycle,
-                    async)) {
+        if (create_thread(async->threads + async->count,
+                          worker_thread_cycle, async)) {
             /* signal */
             async_signal(async);
             /* wait for threads and destroy object */
