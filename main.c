@@ -15,7 +15,7 @@ static void greeting(void *arg)
 
 static void schedule_tasks2(void *arg)
 {
-    fprintf(stderr, "SCHEDULE TASKS START (%lf)\n",
+    fprintf(stderr, "Schedule task start (%lf)\n",
             ((float)clock() / CLOCKS_PER_SEC) - run_start);
     async_p async = arg;
     for (size_t i = 0; i < (8 * 1024); i++) {
@@ -30,7 +30,7 @@ static void schedule_tasks2(void *arg)
 
 static void schedule_tasks(void *arg)
 {
-    fprintf(stderr, "SCHEDULE TASKS START (%lf)\n",
+    fprintf(stderr, "Schedule task start (%lf)\n",
             ((float)clock() / CLOCKS_PER_SEC) - run_start);
     async_p async = arg;
     for (size_t i = 0; i < (8 * 1024); i++) {
@@ -41,13 +41,13 @@ static void schedule_tasks(void *arg)
 
 int main(void)
 {
-    fprintf(stderr, "%d Testing Async library\n", getpid());
+    fprintf(stderr, "%d Testing async library\n", getpid());
     /* create the thread pool with a single threads.
      * the callback is optional (we can pass NULL)
      */
     async_p async = Async.create(32);
     if (!async) {
-        perror("ASYNC creation failed");
+        perror("Async creation failed");
         exit(1);
     }
     /* send a task */
