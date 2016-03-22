@@ -9,7 +9,6 @@ static float run_start;
 static void greeting(void *arg)
 {
     int static i = 0;
-    i += 5;
     fprintf(stderr, "Hi! %d\n", i++);
 }
 
