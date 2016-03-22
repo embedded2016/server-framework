@@ -4,18 +4,32 @@
 #include <time.h>
 #include <unistd.h>
 
-static float run_start;
+static struct timespec start, now;
+
+/** @return in ms */
+static double time_diff(struct timespec t1, struct timespec t2)
+{
+    struct timespec diff;
+    if (t2.tv_nsec - t1.tv_nsec < 0) {
+        diff.tv_sec  = t2.tv_sec - t1.tv_sec - 1;
+        diff.tv_nsec = t2.tv_nsec - t1.tv_nsec + 1000000000;
+    } else {
+        diff.tv_sec  = t2.tv_sec - t1.tv_sec;
+        diff.tv_nsec = t2.tv_nsec - t1.tv_nsec;
+    }
+    return (diff.tv_sec * 1000.0 + diff.tv_nsec / 1000000.0);
+}
 
 static void greeting(void *arg)
 {
-    int static i = 0;
+    static int i = 0;
     fprintf(stderr, "Hi! %d\n", i++);
 }
 
 static void schedule_tasks2(void *arg)
 {
-    fprintf(stderr, "Schedule task start (%lf)\n",
-            ((float)clock() / CLOCKS_PER_SEC) - run_start);
+    clock_gettime(CLOCK_REALTIME, &now);
+    fprintf(stderr, "Schedule task at (%lf) ms\n", time_diff(start, now));
     async_p async = arg;
     for (size_t i = 0; i < (8 * 1024); i++) {
         Async.run(async, greeting, NULL);
@@ -23,14 +37,14 @@ static void schedule_tasks2(void *arg)
     }
     Async.run(async, greeting, NULL);
     Async.signal(async);
-    printf("signal finish at %lf\n",
-           ((float)clock() / CLOCKS_PER_SEC) - run_start);
+    clock_gettime(CLOCK_REALTIME, &now);
+    printf("signal finish at (%lf) ms\n", time_diff(start, now));
 }
 
 static void schedule_tasks(void *arg)
 {
-    fprintf(stderr, "Schedule task start (%lf)\n",
-            ((float)clock() / CLOCKS_PER_SEC) - run_start);
+    clock_gettime(CLOCK_REALTIME, &now);
+    fprintf(stderr, "Schedule task at (%lf) ms\n", time_diff(start, now));
     async_p async = arg;
     for (size_t i = 0; i < (8 * 1024); i++) {
         Async.run(async, greeting, NULL);
@@ -41,6 +55,7 @@ static void schedule_tasks(void *arg)
 int main(void)
 {
     fprintf(stderr, "%d Testing async library\n", getpid());
+
     /* create the thread pool with a single threads.
      * the callback is optional (we can pass NULL)
      */
@@ -50,13 +65,12 @@ int main(void)
         exit(1);
     }
     /* send a task */
-    float run_start = (float)clock() / CLOCKS_PER_SEC;
+    clock_gettime(CLOCK_REALTIME, &start);
     Async.run(async, schedule_tasks, async);
-    /* wait for all tasks to finish, closing the threads,
-     * clearing the memory
-     */
+
+    /* wait for all tasks to finish, closing threads, clearing memory */
     Async.wait(async);
-    fprintf(stderr, "Finish (%lf) ms\n",
-            (((float)clock() / CLOCKS_PER_SEC) - run_start) * 1000);
+    clock_gettime(CLOCK_REALTIME, &now);
+    fprintf(stderr, "Finish (%lf) ms\n", time_diff(start, now));
     return 0;
 }
