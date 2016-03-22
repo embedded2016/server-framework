@@ -6,10 +6,10 @@
 
 static float run_start;
 
-static void say_hi(void *arg)
+static void greeting(void *arg)
 {
     int static i = 0;
-    // i = i + 5;
+    i += 5;
     fprintf(stderr, "Hi! %d\n", i++);
 }
 
@@ -19,10 +19,10 @@ static void schedule_tasks2(void *arg)
             ((float)clock() / CLOCKS_PER_SEC) - run_start);
     async_p async = arg;
     for (size_t i = 0; i < (8 * 1024); i++) {
-        Async.run(async, say_hi, NULL);
+        Async.run(async, greeting, NULL);
         printf("wrote task %lu\n", i);
     }
-    Async.run(async, say_hi, NULL);
+    Async.run(async, greeting, NULL);
     Async.signal(async);
     printf("signal finish at %lf\n",
            ((float)clock() / CLOCKS_PER_SEC) - run_start);
@@ -34,7 +34,7 @@ static void schedule_tasks(void *arg)
             ((float)clock() / CLOCKS_PER_SEC) - run_start);
     async_p async = arg;
     for (size_t i = 0; i < (8 * 1024); i++) {
-        Async.run(async, say_hi, NULL);
+        Async.run(async, greeting, NULL);
     }
     Async.run(async, schedule_tasks2, async);
 }
