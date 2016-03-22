@@ -8,6 +8,17 @@
 #include <fcntl.h>
 #include <sched.h>
 
+/* suppress compilation warnings */
+#undef write
+#define write write_wrapper
+static inline ssize_t write_wrapper(int fd, const void *buf, size_t count)
+{
+    ssize_t s;
+    if ((s = write(fd, buf, count)) < count)
+        perror("write");
+    return s;
+}
+
 /* the actual working thread */
 static void *worker_thread_cycle(void *async);
 
@@ -104,8 +115,7 @@ static int async_run(async_p async, void (*task)(void *), void *arg)
      * we need to unlock before we write, or we will have excess
      * context switches.
      */
-    if (write(async->pipe.out, c->task, 1))
-        ;
+    write(async->pipe.out, c->task, 1);
     return 0;
 }
 
@@ -167,8 +177,7 @@ static void async_signal(async_p async)
     async->run = 0;
     // send `async->count` number of wakeup signales (data content is
     // irrelevant)
-    if (write(async->pipe.out, async, async->count))
-        ;
+    write(async->pipe.out, async, async->count);
 }
 
 /**
@@ -187,8 +196,7 @@ static void async_wait(async_p async)
      * number of wakeups
      */
     if (async->pipe.out)
-        if (write(async->pipe.out, async, async->count))
-		;
+        write(async->pipe.out, async, async->count);
     /* join threads */
     for (int i = 0; i < async->count; i++) {
         join_thread(async->threads[i]);
