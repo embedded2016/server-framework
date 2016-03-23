@@ -1,4 +1,4 @@
-EXEC = test-async
+EXEC = test-async test-reactor
 .PHONY: all
 all: $(EXEC)
 
@@ -8,7 +8,7 @@ LDFLAGS = -lpthread
 
 OBJS := \
 	async.o \
-	react.o
+	reactor.o
 deps := $(OBJS:%.o=%.o.d)
 
 test-%: %.o tests/test-%.c
