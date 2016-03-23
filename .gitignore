@@ -1,6 +1,9 @@
 *.o
 *.d
 
-# test programs
+# generated programs
 test-async
 test-reactor
+test-buffer
+test-protocol-server
+httpd
