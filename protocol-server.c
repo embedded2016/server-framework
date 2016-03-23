@@ -49,7 +49,8 @@ struct GroupTask {
 
 /** The server data object container */
 struct Server {
-    /** inherit the reactor (must be first in the struct,
+    /**
+     * inherit the reactor (must be first in the struct,
      * for pointer conformity)
      */
     struct Reactor reactor;
@@ -58,7 +59,7 @@ struct Server {
     struct Async *async; /**< a pointer to the thread pool object */
     pthread_mutex_t lock; /**< a mutex for server data integrity */
     struct Protocol * volatile *protocol_map; /**< maps each connection
-						                           to its protocol. */
+                                                   to its protocol. */
 
     /**
      * Used to send the server data + sockfd number to any worker threads.
@@ -162,8 +163,8 @@ static int srv_attach(struct Server *server,
                       struct Protocol *protocol);
 static void srv_close(struct Server *server, int sockfd);
 static int srv_hijack(struct Server *server, int sockfd);
-static long srv_count(struct Server* server, char* service);
-static void srv_touch(struct Server* server, int sockfd);
+static long srv_count(struct Server *server, char *service);
+static void srv_touch(struct Server *server, int sockfd);
 
 /* Read and Write */
 
@@ -178,7 +179,8 @@ void rw_hooks(
                             void *buffer, size_t size),
     ssize_t (*writing_hook)(server_pt srv, int fd,
                             void *data, size_t len));
-static ssize_t srv_read(server_pt srv, int fd, void *buffer, size_t max_len);
+static ssize_t srv_read(server_pt srv, int fd,
+                        void *buffer, size_t max_len);
 static ssize_t srv_write(struct Server *server, int sockfd,
                          void *data, size_t len);
 static ssize_t srv_write_move(struct Server *server, int sockfd,
@@ -232,37 +234,37 @@ void add_to_group_task(struct Server *server, int fd, void *arg);
  * a namespace for the API
  */
 const struct Server__API____ Server = {
-    .reactor = srv_reactor,                      //
-    .settings = srv_settings,                    //
-    .capacity = srv_capacity,                    //
-    .listen = srv_listen,                        //
-    .stop = srv_stop,                            //
-    .stop_all = srv_stop_all,                    //
-    .is_busy = is_busy,                          //
-    .get_protocol = get_protocol,                //
-    .set_protocol = set_protocol,                //
-    .get_udata = get_udata,                      //
-    .set_udata = set_udata,                      //
-    .set_timeout = set_timeout,                  //
-    .attach = srv_attach,                        //
-    .close = srv_close,                          //
-    .hijack = srv_hijack,                        //
-    .count = srv_count,                          //
-    .touch = srv_touch,                          //
-    .rw_hooks = rw_hooks,                        //
-    .read = srv_read,                            //
-    .write = srv_write,                          //
-    .write_move = srv_write_move,                //
-    .write_urgent = srv_write_urgent,            //
-    .write_move_urgent = srv_write_move_urgent,  //
-    .sendfile = srv_sendfile,                    //
-    .each = each,                                //
-    .each_block = each_block,                    //
-    .fd_task = fd_task,                          //
-    .run_async = run_async,                      //
-    .run_after = run_after,                      //
-    .run_every = run_every,                      //
-    .root_pid = root_pid,                        //
+    .reactor = srv_reactor,
+    .settings = srv_settings,
+    .capacity = srv_capacity,
+    .listen = srv_listen,
+    .stop = srv_stop,
+    .stop_all = srv_stop_all,
+    .is_busy = is_busy,
+    .get_protocol = get_protocol,
+    .set_protocol = set_protocol,
+    .get_udata = get_udata,
+    .set_udata = set_udata,
+    .set_timeout = set_timeout,
+    .attach = srv_attach,
+    .close = srv_close,
+    .hijack = srv_hijack,
+    .count = srv_count,
+    .touch = srv_touch,
+    .rw_hooks = rw_hooks,
+    .read = srv_read,
+    .write = srv_write,
+    .write_move = srv_write_move,
+    .write_urgent = srv_write_urgent,
+    .write_move_urgent = srv_write_move_urgent,
+    .sendfile = srv_sendfile,
+    .each = each,
+    .each_block = each_block,
+    .fd_task = fd_task,
+    .run_async = run_async,
+    .run_after = run_after,
+    .run_every = run_every,
+    .root_pid = root_pid,
 };
 
 /* timer protocol */
@@ -286,7 +288,7 @@ static void tp_perform_on_data(struct Server* self, int fd)
         (struct TimerProtocol *) Server.get_protocol(self, fd);
     if (timer) {
         /* set local data copy, to avoid race contitions related to `free`. */
-        void (*task)(void *) = (void (*)(void *))timer->task;
+        void (*task)(void *) = (void (*)(void *)) timer->task;
         void *arg = timer->arg;
         /* perform the task */
         if (task) task(arg);
@@ -296,7 +298,7 @@ static void tp_perform_on_data(struct Server* self, int fd)
         /* close the file descriptor */
         if (timer->repeat < 0) return;
         if (timer->repeat == 0) {
-            reactor_close((struct Reactor*) self, fd);
+            reactor_close((struct Reactor *) self, fd);
             return;
         }
         timer->repeat--;
@@ -678,7 +680,7 @@ static int srv_listen(struct ServerSettings settings)
     int srvfd = 0;
     if (settings.port > 0) {
         srvfd = bind_server_socket(&srv);
-        // if we didn't get a socket, quit now.
+        /* if we did not get a socket, quit now. */
         if (srvfd < 0) return -1;
         srv.srvfd = srvfd;
     }
@@ -716,7 +718,7 @@ static int srv_listen(struct ServerSettings settings)
                 pids[i] = fork();
         }
     }
-    // once we forked, we can initiate a thread pool for each process
+    /* once we forked, we can initiate a thread pool for each process */
     srv.async = Async.create(settings.threads);
     if (srv.async <= 0) {
         if (srvfd)
@@ -728,41 +730,39 @@ static int srv_listen(struct ServerSettings settings)
     register_server(&srv);
 
     if (srvfd)
-        printf(
-            "(pid %d : %d threads) Listening on port %s "
-            "(max sockets: %lu, ~%d used)\n",
-            getpid(), srv.settings->threads, srv.settings->port, srv.capacity,
-            srv.srvfd + 2);
+        printf("(pid %d : %d threads) Listening on port %s "
+               "(max sockets: %lu, ~%d used)\n",
+               getpid(), srv.settings->threads, srv.settings->port,
+               srv.capacity,
+               srv.srvfd + 2);
     else
-        printf(
-            "(pid %d : %d threads) Started a non-listening "
-            "network service (max sockets: %lu ~ at least "
-            "6 are in system use)\n",
-            getpid(), srv.settings->threads, srv.capacity);
+        printf("(pid %d : %d threads) Started a non-listening "
+               "network service (max sockets: %lu ~ at least "
+               "6 are in system use)\n",
+               getpid(), srv.settings->threads, srv.capacity);
 
-    // initialize reactor
+    /* initialize reactor */
     reactor_init(&srv.reactor);
-    // bind server data to reactor loop
+    /* bind server data to reactor loop */
     if (srvfd)
         reactor_add(&srv.reactor, srv.srvfd);
 
-    // call the on_init callback
+    /* call the on_init callback */
     if (settings.on_init)
         settings.on_init(&srv);
 
-    // initiate the core's cycle
+    /* initiate the core's cycle */
     srv.run = 1;
-    Async.run(srv.async, (void (*)(void*))srv_cycle_core, &srv);
+    Async.run(srv.async, (void (*)(void *)) srv_cycle_core, &srv);
     Async.wait(srv.async);
     fprintf(stderr, "server done\n");
-    // cleanup
+    /* cleanup */
     reactor_stop(&srv.reactor);
 
     if (settings.processes > 1 && getpid() == srv.root_pid) {
         int sts;
-        for (int i = 1; i < settings.processes; i++) {
+        for (int i = 1; i < settings.processes; i++)
             kill(pids[i], SIGINT);
-        }
         for (int i = 1; i < settings.processes; i++) {
             sts = 0;
             if (waitpid(pids[i], &sts, 0) != pids[i])
@@ -777,15 +777,15 @@ static int srv_listen(struct ServerSettings settings)
         fflush(NULL);
         exit(0);
     }
-    // restore signal state
+    /* restore signal state */
     sigaction(SIGINT, &old_int, NULL);
     sigaction(SIGTERM, &old_term, NULL);
     sigaction(SIGPIPE, &old_pipe, NULL);
 
-    // destroy the buffers.
+    /* destroy the buffers */
     for (int i = 0; i < srv_capacity(); i++)
         Buffer.destroy(buffer_map[i]);
-    // destroy the task pools
+    /* destroy the task pools */
     destroy_fd_task(&srv, NULL);
     destroy_group_task(&srv, NULL);
 
@@ -805,9 +805,9 @@ static int srv_attach(server_pt server, int sockfd, struct Protocol *protocol)
 
     if (sockfd >= server->capacity)
         return -1;
-    // setup protocol
-    server->protocol_map[sockfd] = protocol;  // set_protocol() would cost more
-    // setup timeouts
+    /* setup protocol */
+    server->protocol_map[sockfd] = protocol;
+    /* setup timeouts */
     server->tout[sockfd] = server->settings->timeout;
     server->idle[sockfd] = 0;
     // call on_open
@@ -829,9 +829,9 @@ static void srv_close(struct Server *server, int sockfd)
 {
     if (!server->protocol_map[sockfd]) return;
 
-    if (Buffer.is_empty(server->buffer_map[sockfd])) {
+    if (Buffer.is_empty(server->buffer_map[sockfd]))
         reactor_close((struct Reactor*)server, sockfd);
-    } else
+    else
         Buffer.close_when_done(server->buffer_map[sockfd], sockfd);
 }
 
@@ -845,6 +845,7 @@ static int srv_hijack(struct Server *server, int sockfd)
     clear_conn_data(server, sockfd);
     return 0;
 }
+
 static long srv_count(struct Server *server, char *service)
 {
     int c = 0;
@@ -872,13 +873,11 @@ static void srv_touch(struct Server* server, int sockfd)
 
 /* Read and Write */
 
-void rw_hooks(
-    server_pt srv,
-    int sockfd,
-    ssize_t (*reading_hook)(server_pt srv, int fd,
-                            void *buffer, size_t size),
-    ssize_t (*writing_hook)(server_pt srv, int fd,
-                            void *data, size_t len))
+void rw_hooks(server_pt srv, int sockfd,
+              ssize_t (*reading_hook)(server_pt srv, int fd,
+                                      void *buffer, size_t size),
+              ssize_t (*writing_hook)(server_pt srv, int fd,
+                                      void *data, size_t len))
 {
     srv->reading_hooks[sockfd] = reading_hook;
     Buffer.set_whook(srv->buffer_map[sockfd], writing_hook);
@@ -906,8 +905,8 @@ static ssize_t srv_write(struct Server *server, int sockfd,
                          void *data, size_t len)
 {
     /* make sure the socket is alive */
-    if (!server->protocol_map[sockfd])
-        return -1;
+    if (!server->protocol_map[sockfd]) return -1;
+
     /* reset timeout */
     server->idle[sockfd] = 0;
     /* send data */
@@ -1074,7 +1073,7 @@ void destroy_group_task(server_pt srv, struct GroupTask *task)
 {
     if (task == NULL) {
         pthread_mutex_lock(&srv->task_lock);
-        struct FDTask* tmp;
+        struct FDTask *tmp;
         srv->group_task_pool_size = 0;
         while ((tmp = srv->fd_task_pool)) {
             srv->fd_task_pool = srv->fd_task_pool->next;
@@ -1138,7 +1137,7 @@ static void perform_group_task(struct GroupTask *task)
     return;
 rescedule:
     Async.run(task->server->async,
-              (void (*)(void *)) & perform_group_task, task);
+              (void (*)(void *)) &perform_group_task, task);
     return;
 }
 
@@ -1203,8 +1202,9 @@ static int fd_task(struct Server *server, int sockfd,
                                     int fd, void *arg))
 {
     if (server->protocol_map[sockfd]) {
-        struct FDTask* msg = new_fd_task(server);
+        struct FDTask *msg = new_fd_task(server);
         if (!msg) return -1;
+
         *msg = (struct FDTask) {
             .server = server,
             .task = task, .arg = arg,
@@ -1299,6 +1299,7 @@ static void srv_stop(server_pt srv)
             set = set->next;
         }
     }
+
     /* the server wasn't in the registry - we shouldn't stop it again. */
     srv = NULL;
 /* send a signal to the server, if it was in the registry */
@@ -1353,7 +1354,7 @@ static int bind_server_socket(struct Server *self)
     int srvfd;
     /* setup the address */
     struct addrinfo hints;
-    struct addrinfo* servinfo;
+    struct addrinfo *servinfo;
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_UNSPEC;  /* don't care IPv4 or IPv6 */
     hints.ai_socktype = SOCK_STREAM;  /* TCP stream sockets */
