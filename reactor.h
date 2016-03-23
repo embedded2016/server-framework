@@ -12,27 +12,24 @@
 #include <sys/types.h>
 
 /**
- * Simplified implementation of reactor pattern using callbacks
+ * \brief [Reactor pattern](https://en.wikipedia.org/wiki/Reactor_pattern)
+ *        implementation using callbacks
  *
  * Supported events (and corresponding callbacks):
  *  - Ready to Read (`on_data` callback).
  *  - Ready to Write (`on_ready` callback).
  *  - Closed (`on_close` callback).
  *  - Reactor Exit (`on_shutdown` callback - will be called before the file
- *                  descriptor is closed and `on_close` callback is fired).
-*/
-
-/**
- * hold the reactor's core data and settings.
+ *    descriptor is closed and `on_close` callback is fired).
  */
 struct Reactor {
     /* File Descriptor Callbacks */
 
     /**
-     * Called when the file descriptor has incoming data.
+     * \brief Called when the file descriptor has incoming data.
      * This is edge triggered and will not be called again unless all the
      * previous data was consumed.
-    */
+     */
     void (*on_data)(struct Reactor *reactor, int fd);
 
     /**
@@ -46,7 +43,7 @@ struct Reactor {
     void (*on_shutdown)(struct Reactor *reactor, int fd);
 
     /**
-     * Called when a file descriptor was closed REMOTELY.
+     * \brief Called when a file descriptor was closed REMOTELY.
      * `on_close` will NOT get called when a connection is closed locally,
      * unless using `reactor_close` function.
      */
@@ -57,7 +54,8 @@ struct Reactor {
     /** the time (seconds since epoch) of the last "tick" (event cycle) */
     time_t last_tick;
 
-    /** the maximum value for a file descriptor that the reactor will
+    /**
+     * the maximum value for a file descriptor that the reactor will
      * be required to handle (the capacity -1).
      */
     int maxfd;
@@ -68,12 +66,13 @@ struct Reactor {
 
 /**
  * \brief Initialize the reactor, making the reactor "live".
- * once initialized, the reactor CANNOT be forked, so do not fork
+ *
+ * Once initialized, the reactor CANNOT be forked, so do not fork
  * the process after calling `reactor_init`, or data corruption will
  * be experienced.
  * @return -1 on error
  * @return 0  otherwise
-*/
+ */
 int reactor_init(struct Reactor *);
 
 /**
@@ -93,31 +92,29 @@ void reactor_stop(struct Reactor *);
 
 /**
  * \brief Add a file descriptor to the reactor
- * so that callbacks will be called for its events.
+ * Callbacks will be called for its events.
  * @return -1 on error
- * @return otherwise, system dependent.
  */
 int reactor_add(struct Reactor *, int fd);
 
 /**
- * \brief Remove a file descriptor from the reactor
+ * \brief Remove a file descriptor from the reactor.
  * Further callbacks will not be called.
- * @return -1 on error,
- * @return otherwise, system dependent. If the file descriptor was not
- *         owned by the reactor, it isn't an error.
+ * @return -1 on error
+ * @return other.  If the file descriptor was not
+ *         owned by the reactor, it is not an error.
  */
 int reactor_remove(struct Reactor *, int fd);
 
 /**
- * \brief Close a file descriptor, calling its callback if it was
- *        registered with the reactor.
+ * \brief Close a file descriptor
+ * Execute its callback if it was registered with the reactor.
 */
 void reactor_close(struct Reactor *, int fd);
 
 /**
  * \brief Add a file descriptor as a timer object.
  * @return -1 on error
- * @return otherwise, system dependent.
  */
 int reactor_add_timer(struct Reactor *, int fd, long milliseconds);
 
@@ -129,7 +126,7 @@ void reactor_reset_timer(int fd);
 /**
  * \brief Open a new file decriptor for creating timer events.
  * @return -1 on error
- * @return the file descriptor.
+ * @return the file descriptor
  */
 int reactor_make_timer(void);
 

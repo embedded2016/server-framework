@@ -108,7 +108,7 @@ struct Server {
 
 /* Server settings and objects */
 
-/** @return the originating process pid */
+/** return the originating process pid */
 static pid_t root_pid(struct Server *server);
 
 /* allow direct access to the reactor object */
@@ -117,13 +117,15 @@ static struct Reactor *srv_reactor(struct Server *server);
 /* allow direct access to the server's original settings */
 static struct ServerSettings *srv_settings(struct Server *server);
 
-/** @return the computed capacity for any server instance on the system */
+/** return the computed capacity for any server instance on the system */
 static long srv_capacity(void);
 
 /* Server actions */
 
-/** listen to a server with the following server settings (which MUST
- * include a default protocol). */
+/**
+ * listen to a server with the following server settings (which MUST
+ * include a default protocol).
+ */
 static int srv_listen(struct ServerSettings);
 
 /* stop a specific server, closing any open connections. */
@@ -228,11 +230,7 @@ void destroy_group_task(server_pt srv, struct GroupTask *task);
 static void perform_group_task(struct GroupTask *task);
 void add_to_group_task(struct Server *server, int fd, void *arg);
 
-/* actual Server API access setup */
-
-/* The following allows access to helper functions and defines
- * a namespace for the API
- */
+/* Server API gateway */
 const struct __SERVER_API__ Server = {
     .reactor = srv_reactor,
     .settings = srv_settings,
@@ -397,7 +395,7 @@ static void *get_udata(struct Server *server, int sockfd)
     return server->udata_map[sockfd];
 }
 
-static void* set_udata(struct Server *server, int sockfd, void *udata)
+static void *set_udata(struct Server *server, int sockfd, void *udata)
 {
     void *old = server->udata_map[sockfd];
     server->udata_map[sockfd] = udata;
@@ -435,7 +433,7 @@ static void on_ready(struct Reactor *reactor, int fd)
         _protocol_(reactor, fd)->on_ready(_server_(reactor), fd);
 }
 
-static void on_shutdown(struct Reactor* reactor, int fd)
+static void on_shutdown(struct Reactor *reactor, int fd)
 {
     /* call the callback for the mentioned active connection. */
     if (_protocol_(reactor, fd) && _protocol_(reactor, fd)->on_shutdown)
@@ -614,7 +612,7 @@ static void srv_cycle_core(server_pt server)
 
 static int srv_listen(struct ServerSettings settings)
 {
-    // review the settings, setup defaults when something's missing
+    /* review the settings, setup defaults when something's missing */
     if (!settings.protocol) {
         /* FIXME: warn the message:
          * "Server err: (protocol == NULL) Running a server requires "
@@ -667,9 +665,9 @@ static int srv_listen(struct ServerSettings settings)
         .reactor.on_close = on_close,
     };
     /* initialize the server data mutex */
-    if (pthread_mutex_init(&srv.lock, NULL)) {
+    if (pthread_mutex_init(&srv.lock, NULL))
         return -1;
-    }
+
     /* initialize the server task pool mutex */
     if (pthread_mutex_init(&srv.task_lock, NULL)) {
         pthread_mutex_destroy(&srv.lock);
@@ -789,7 +787,7 @@ static int srv_listen(struct ServerSettings settings)
     destroy_fd_task(&srv, NULL);
     destroy_group_task(&srv, NULL);
 
-    // destroy the mutexes
+    /* destroy the mutexes */
     pthread_mutex_destroy(&srv.lock);
     pthread_mutex_destroy(&srv.task_lock);
 
@@ -810,12 +808,14 @@ static int srv_attach(server_pt server, int sockfd, struct Protocol *protocol)
     /* setup timeouts */
     server->tout[sockfd] = server->settings->timeout;
     server->idle[sockfd] = 0;
-    // call on_open
-    // register the client - start it off as busy, protocol still initializing
-    // we don't need the mutex, because it's all fresh
+
+    /* call `on_open` to register the client - start it off as
+     * busy, protocol still initializing.
+     * we don't need the mutex, because it is all fresh
+     */
     server->busy[sockfd] = 1;
-    // attach the socket to the reactor
-    if (reactor_add((struct Reactor*)server, sockfd) < 0) {
+    /* attach the socket to the reactor */
+    if (reactor_add((struct Reactor *) server, sockfd) < 0) {
         clear_conn_data(server, sockfd);
         return -1;
     }
@@ -866,7 +866,7 @@ static long srv_count(struct Server *server, char *service)
     return c;
 }
 
-static void srv_touch(struct Server* server, int sockfd)
+static void srv_touch(struct Server *server, int sockfd)
 {
     server->idle[sockfd] = 0;
 }
@@ -951,6 +951,7 @@ static ssize_t srv_write_move_urgent(struct Server *server, int sockfd,
 {
     /* make sure the socket is alive */
     if (!server->protocol_map[sockfd]) return -1;
+
     /* reset timeout */
     server->idle[sockfd] = 0;
     /* send data */

@@ -3,9 +3,26 @@
 
 typedef struct Async *async_p;
 
+/**
+ * \brief A simple thread pool utilizing POSIX threads
+ *
+ * It uses a combination of a pipe (for wakeup signals) and mutexes (for
+ * managing the task queue) to give a basic layer of protection to any
+ * server implementation.
+ *
+ * The Async global object allows us access to the Async thread pool API. i.e.
+ * @code
+ *   async_p async = Async.new(4); // 4 worker threads
+ *   Async.finish(async); // signal and wait, then the object self-destructs
+ * @endcode
+ *
+ * Please note, the implementation is not fork-friendly. In general, mixing
+ * `fork` with multi-threading is not safe nor trivial - always fork before
+ * multi-threading.
+ */
 extern struct __ASYNC_API__ {
     /**
-     * \brief Create a new Async object (a thread pool)
+     * \brief Create a new Async object (thread pool)
      *        a pointer using the `async_p` (Async Pointer) type.
      * @param threads the number of new threads to be initialized
      * @return a pointer using the `async_p` (Async Pointer) type
@@ -66,13 +83,16 @@ extern struct __ASYNC_API__ {
      *        for it to finish.
      *
      * This is akin to calling both `signal` and `wait` in succession:
-     * - Async.signal(async);
-     * - Async.wait(async);
+     *   - Async.signal(async);
+     *   - Async.wait(async);
      *
      * Use:
      * @code
      *   Async.finish(async);
      * @endcode
+     *
+     * @return  0 on success
+     * @return -1 on error
      */
     void (*finish)(async_p);
 } Async;

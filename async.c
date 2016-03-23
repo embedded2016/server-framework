@@ -40,8 +40,6 @@ static int create_thread(pthread_t *thr,
     return pthread_create(thr, NULL, thread_func, async);
 }
 
-/* Data Types */
-
 /** A task node */
 struct AsyncTask {
     struct AsyncTask *next;
@@ -74,11 +72,6 @@ struct Async {
 
 /* Task Management - add a task and perform al tasks in queue */
 
-/**
- * \brief Schedules a task to be performed by an Async thread pool group.
- *
- * The Task should be a function such as `void task(void *arg)`.
- */
 static int async_run(async_p async, void (*task)(void *), void *arg)
 {
     struct AsyncTask *c;  /* the container, storing the task */
@@ -159,17 +152,8 @@ static void *worker_thread_cycle(void *_async)
     return 0;
 }
 
-/* Signaling and finishing up */
+/* Signal and finish */
 
-/**
- * \brief Signals an Async object to finish up.
- *
- * The threads in the thread pool will continue perfoming all the tasks in
- * the queue until the queue is empty. Once the queue is empty, the threads
- * will exit. If new tasks are created after the signal, they will be added
- * to the queue and processed until the last thread is done. Once the last
- * thread exists, future tasks won't be processed.
- */
 static void async_signal(async_p async)
 {
     async->run = 0;
@@ -178,14 +162,6 @@ static void async_signal(async_p async)
     write(async->pipe.out, async, async->count);
 }
 
-/**
- * \brief Waits for an Async object to finish up (joins all the threads
- *        in the thread pool) and DESTROYS the Async object (frees its
- *        memory and resources).
- *
- * This function will wait forever or until a signal is received and all
- * the tasks in the queue have been processed.
- */
 static void async_wait(async_p async)
 {
     if (!async) return;
@@ -205,14 +181,6 @@ static void async_wait(async_p async)
     async_destroy(async);
 }
 
-/**
- * Both signals for an Async object to finish up and waits for it to finish.
- * This is akin to calling both `signal` and `wait` in succession:
- * - Async.signal(async);
- * - Async.wait(async);
- *
- * @return 0 on success and -1 of error.
- */
 static void async_finish(async_p async)
 {
     async_signal(async);

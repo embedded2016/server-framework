@@ -1,3 +1,7 @@
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
+
 #include "buffer.h"
 
 #include <string.h>
@@ -15,7 +19,7 @@
 #define BUFFER_MAX_PACKET_POOL 127
 #endif
 
-// Buffer packets
+/* Buffer packets */
 struct Packet {
     ssize_t length;
     struct Packet *next;
@@ -311,8 +315,10 @@ buffer_copy_next(struct Buffer *buffer, void *data, size_t length)
 static ssize_t buffer_flush(struct Buffer* buffer, int fd)
 {
     if (!is_buffer(buffer)) return -1;
+
     ssize_t sent = 0;
     struct Packet *packet;
+
     pthread_mutex_lock(&buffer->lock);
 start_flush:
     /* no packets to send */
@@ -320,6 +326,7 @@ start_flush:
         pthread_mutex_unlock(&buffer->lock);
         return 0;
     }
+
     /* packet is a file */
     if (!buffer->packet->length) {
         /* make sure file sending isn't interrupted. */
@@ -410,6 +417,7 @@ static void buffer_close_w_d(struct Buffer* buffer, int fd)
         close(fd);
         return;
     }
+
     pthread_mutex_lock(&buffer->lock);
     struct Packet *packet = buffer->packet;
     if (!packet)

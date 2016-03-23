@@ -15,12 +15,10 @@
  * buffers.
 */
 
-/* The following types are defined for the userspace of this library: */
-
-struct Server;                    /** used internally. no public data exposed */
-typedef struct Server* server_pt; /** a pointer to a server object */
-struct ServerSettings;            /** sets up the server's behavior */
-struct Protocol;                  /** controls connection events */
+struct Server; /**< used internally. no public data exposed */
+typedef struct Server *server_pt; /**< a pointer to a server object */
+struct ServerSettings; /**< sets up the server's behavior */
+struct Protocol; /**< controls connection events */
 
 /**
  * The start_server(...) macro is a shortcut that allows to easily create
@@ -114,12 +112,19 @@ struct ServerSettings {
 
 /**
 * \brief Server API
+*
+* The design of server API is based on Protocol structure and callbacks,
+* so that we can dynamically change protocols and support stuff like HTTP
+* requests.
+*
 * The API and helper functions described here are accessed using the global
 * `Server` object. That is,
-*     Server.listen(struct ServerSettings { ... });
+* @code
+*   Server.listen(struct ServerSettings { ... });
+* @endcode
 */
 extern const struct __SERVER_API__ {
-    /** @return the originating process pid */
+    /** return the originating process pid */
     pid_t (*root_pid)(struct Server * server);
 
     /** Allow direct access to the reactor object */
@@ -171,7 +176,7 @@ extern const struct __SERVER_API__ {
     /**
      * Set the active protocol object for the requested file descriptor.
      * @return -1 on error (i.e. connection closed)
-     * @return 0 otherwise
+     * @return  0 otherwise
     */
     int (*set_protocol)(struct Server *server,
                         int sockfd,
@@ -267,12 +272,15 @@ extern const struct __SERVER_API__ {
      * Returning a positive value without writing data to the network will
      * NOT cause the writing hook to be called again.
      * That is:
-     *   ssize_t writing_hook(server_pt srv, int fd, void* data, size_t len) {
+     * @code
+     *   ssize_t writing_hook(server_pt srv, int fd,
+     *                        void *data, size_t len) {
      *     int sent = write(fd, data, len);
      *     if (sent < 0 && (errno & (EWOULDBLOCK | EAGAIN | EINTR)))
      *       sent = 0;
      *     return sent;
      *   }
+     * @endcode
      *
      * **Reading hook**
      *
@@ -286,6 +294,7 @@ extern const struct __SERVER_API__ {
      * except the number of bytes returned refers to the number of bytes
      * written to the buffer.
      * That is:
+     * @code
      *   ssize_t reading_hook(server_pt srv, int fd,
      *                        void *buffer, size_t size) {
      *     ssize_t read = 0;
@@ -293,6 +302,7 @@ extern const struct __SERVER_API__ {
      *     else if (read && (errno & (EWOULDBLOCK | EAGAIN))) return 0;
      *     return -1;
      *   }
+     * @endcode
      */
     void (*rw_hooks)(server_pt srv, int sockfd,
                      ssize_t (*reading_hook)(server_pt srv, int fd,

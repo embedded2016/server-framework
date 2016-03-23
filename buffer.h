@@ -1,31 +1,30 @@
 #ifndef _BUFFER_H
 #define _BUFFER_H
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
-#include <stdlib.h>
-#include <stdio.h>
 #include <sys/types.h>
-
 #include "protocol-server.h"
 
 /**
- * packet-based Buffer object for network data output.
+ * \brief packet-based Buffer object for network data output.
  *
- * The buffer is pretty much a wrapper for a binary tree with mutexes.
+ * The buffer is pretty much a wrapper for user-level network buffer
+ * and writing data asynchronously.
  *
- * To Create a Buffer use:
- *     `void * Buffer.new(0)` - the offset sets a pre-sent amount for
- *                              the first packet.
- * To destroy a Buffer use:
- *     `void Buffer.destroy(void * buffer)`
+ * To Create a Buffer, use:
+ * @code
+ *   void *buffer = Buffer.new(0);
+ * @endcode
+ * The offset sets a pre-sent amount for the first packet.
+ *
+ * To destroy a Buffer, use:
+ * @code
+ *   Buffer.destroy(buffer);
+ * @endcode
  *
  * To add data to a Buffer use any of:
  *   - `write` will copy the data to a new buffer packet.
  *
- *   - `size_t Buffer.write(void * buffer, void * data, size_t length)`
+ *   - `size_t Buffer.write(void *buffer, void *data, size_t length)`
  *
  *   - `write_move` will take ownership of the data, wrap it in a buffer
  *     packet and free the mempry once the packet was sent.
@@ -33,22 +32,22 @@
  *     it had been reached (all previous data was sent) - same as
  *     `close_when_done`.
  *
- *   - `size_t Buffer.write_move(void * buffer, void * data, size_t length)`
+ *   - `size_t Buffer.write_move(void *buffer, void *data, size_t length)`
  *
  *   - `write_next` will COPY the data, and place it as the first packet in
  *     the queue. `write_next` will protect the current packet from being
  *     interrupted in the middle and the data will be sent as soon as
  *     possible without cutting any packets in half.
  *
- *   - `size_t Buffer.write_next(void * buffer, void * data, size_t length)`
+ *   - `size_t Buffer.write_next(void *buffer, void *data, size_t length)`
  *
  * To send data from a Buffer to a socket / pipe (file descriptor) use:
  *     `size_t Buffer.flush(void * buffer, int fd)`
  */
 extern const struct BufferClass {
     /**
-     * \brief Create a new buffer object, reserving memory for the core
-     * data and creating a mutex.
+     * \brief Create a new buffer object
+     * Reserve memory for the core data and creating a mutex.
      * The buffer object should require ~96 bytes (system dependent),
      * including the mutex object.
      */
@@ -56,14 +55,14 @@ extern const struct BufferClass {
 
     /**
      * \brief Clear the buffer and destroys the buffer object
-     * Releasing buffer object's core memory and the mutex associated
+     * Release buffer object's core memory and the mutex associated
      * with the buffer.
      */
     void (*destroy)(void *buffer);
 
     /**
      * \brief Clear all the data in the buffer (freeing the data's memory),
-     *        closes any pending files and resets the writing hook.
+     * Close any pending files and resets the writing hook.
      */
     void (*clear)(void *buffer);
 
@@ -91,22 +90,24 @@ extern const struct BufferClass {
      * A writing hook should return 0 if no data was sent, but the
      * connection should remain open or no fatal error occured.
      * That is:
-     *   ssize_t writing_hook(server_pt srv, int fd, void *data, size_t len) {
+     * @code
+     *   ssize_t writing_hook(server_pt srv, int fd,
+     *                        void *data, size_t len) {
      *       int sent = write(fd, data, len);
      *       if (sent < 0 && (errno & (EWOULDBLOCK | EAGAIN | EINTR)))
      *           sent = 0;
      *        return sent;
      *   }
+     * @endcode
      */
-    void (*set_whook)(
-        void *buffer,
-        ssize_t (*writing_hook)(server_pt srv,
-                                int fd, void *data, size_t len));
+    void (*set_whook)(void *buffer,
+                      ssize_t (*writing_hook)(server_pt srv, int fd,
+                                              void *data, size_t len));
 
     /**
-     * \brief Flush the buffer data through the socket.
+     * \brief Flush the buffer data through the socket
      * @return the number of bytes sent, if any.
-     * @return -1 on error.
+     * @return -1 on error
      */
     ssize_t (*flush)(void *buffer, int fd);
 
@@ -130,7 +131,7 @@ extern const struct BufferClass {
      * The buffer will call `free` to deallocate the data once the data was
      * sent.
      */
-    size_t (*write_move)(void* buffer, void* data, size_t length);
+    size_t (*write_move)(void *buffer, void *data, size_t length);
 
     /**
      * \brief Create a copy of the data and pushes the copy to the buffer.
