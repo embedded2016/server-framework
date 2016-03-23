@@ -113,7 +113,7 @@ struct ServerSettings {
 };
 
 /**
-* @brief Server API
+* \brief Server API
 * The API and helper functions described here are accessed using the global
 * `Server` object. That is,
 *     Server.listen(struct ServerSettings { ... });
@@ -206,7 +206,7 @@ extern const struct __SERVER_API__ {
 	              struct Protocol *protocol);
 
     /**
-     * @brief Close the connection.
+     * \brief Close the connection.
      * If any data is waiting to be written, close will return immediately
      * and the connection will only be closed once all the data was sent. */
     void (*close)(struct Server *server, int sockfd);

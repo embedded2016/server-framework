@@ -67,7 +67,7 @@ struct Reactor {
 };
 
 /**
- * @brief Initialize the reactor, making the reactor "live".
+ * \brief Initialize the reactor, making the reactor "live".
  * once initialized, the reactor CANNOT be forked, so do not fork
  * the process after calling `reactor_init`, or data corruption will
  * be experienced.
@@ -77,14 +77,14 @@ struct Reactor {
 int reactor_init(struct Reactor *);
 
 /**
- * @brief Review any pending events (up to REACTOR_MAX_EVENTS)
+ * \brief Review any pending events (up to REACTOR_MAX_EVENTS)
  * @return -1 on error
  * @return the number of events handled by the reactor.
  */
 int reactor_review(struct Reactor *);
 
 /**
- * @brief Close the reactor, releasing its resources
+ * \brief Close the reactor, releasing its resources
  * The resources to be released do not include the actual struct Reactor,
  * which might have been allocated on the stack and should be handled by
  * the caller).
@@ -92,7 +92,7 @@ int reactor_review(struct Reactor *);
 void reactor_stop(struct Reactor *);
 
 /**
- * @brief Add a file descriptor to the reactor
+ * \brief Add a file descriptor to the reactor
  * so that callbacks will be called for its events.
  * @return -1 on error
  * @return otherwise, system dependent.
@@ -100,7 +100,7 @@ void reactor_stop(struct Reactor *);
 int reactor_add(struct Reactor *, int fd);
 
 /**
- * @brief Remove a file descriptor from the reactor
+ * \brief Remove a file descriptor from the reactor
  * Further callbacks will not be called.
  * @return -1 on error,
  * @return otherwise, system dependent. If the file descriptor was not
@@ -109,13 +109,13 @@ int reactor_add(struct Reactor *, int fd);
 int reactor_remove(struct Reactor *, int fd);
 
 /**
- * @brief Close a file descriptor, calling its callback if it was
+ * \brief Close a file descriptor, calling its callback if it was
  *        registered with the reactor.
 */
 void reactor_close(struct Reactor *, int fd);
 
 /**
- * @brief Add a file descriptor as a timer object.
+ * \brief Add a file descriptor as a timer object.
  * @return -1 on error
  * @return otherwise, system dependent.
  */
@@ -127,7 +127,7 @@ int reactor_add_timer(struct Reactor *, int fd, long milliseconds);
 void reactor_reset_timer(int fd);
 
 /**
- * @brief Open a new file decriptor for creating timer events.
+ * \brief Open a new file decriptor for creating timer events.
  * @return -1 on error
  * @return the file descriptor.
  */

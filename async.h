@@ -5,7 +5,7 @@ typedef struct Async *async_p;
 
 extern struct __ASYNC_API__ {
     /**
-     * @brief Create a new Async object (a thread pool)
+     * \brief Create a new Async object (a thread pool)
      *        a pointer using the `async_p` (Async Pointer) type.
      * @param threads the number of new threads to be initialized
      * @return a pointer using the `async_p` (Async Pointer) type
@@ -18,7 +18,7 @@ extern struct __ASYNC_API__ {
     async_p (*create)(int threads);
 
     /**
-     * @brief Signal an Async object to finish up.
+     * \brief Signal an Async object to finish up.
      *
      * The threads in the thread pool will continue perfoming all the tasks
      * in the queue until the queue is empty. Once the queue is empty, the
@@ -34,7 +34,7 @@ extern struct __ASYNC_API__ {
     void (*signal)(async_p);
 
     /**
-     * @brief Waits for an Async object to finish up (joins all the threads
+     * \brief Waits for an Async object to finish up (joins all the threads
      *        in the thread pool).
      *
      * This function will wait forever or until a signal is received and
@@ -48,7 +48,7 @@ extern struct __ASYNC_API__ {
     void (*wait)(async_p);
 
     /**
-     * @brief Schedules a task to be performed by an Async thread pool group.
+     * \brief Schedules a task to be performed by an Async thread pool group.
      *
      * The Task should be a function such as `void task(void *arg)`.
      *
@@ -62,7 +62,7 @@ extern struct __ASYNC_API__ {
     int (*run)(async_p async, void (*task)(void *), void *arg);
 
     /**
-     * @brief Both signals for an Async object to finish up and waits
+     * \brief Both signals for an Async object to finish up and waits
      *        for it to finish.
      *
      * This is akin to calling both `signal` and `wait` in succession:

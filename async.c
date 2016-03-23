@@ -75,7 +75,7 @@ struct Async {
 /* Task Management - add a task and perform al tasks in queue */
 
 /**
- * @brief Schedules a task to be performed by an Async thread pool group.
+ * \brief Schedules a task to be performed by an Async thread pool group.
  *
  * The Task should be a function such as `void task(void *arg)`.
  */
@@ -162,7 +162,7 @@ static void *worker_thread_cycle(void *_async)
 /* Signaling and finishing up */
 
 /**
- * @brief Signals an Async object to finish up.
+ * \brief Signals an Async object to finish up.
  *
  * The threads in the thread pool will continue perfoming all the tasks in
  * the queue until the queue is empty. Once the queue is empty, the threads
@@ -179,7 +179,7 @@ static void async_signal(async_p async)
 }
 
 /**
- * @brief Waits for an Async object to finish up (joins all the threads
+ * \brief Waits for an Async object to finish up (joins all the threads
  *        in the thread pool) and DESTROYS the Async object (frees its
  *        memory and resources).
  *
