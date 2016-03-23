@@ -12,12 +12,10 @@
 
 /* private data used by reactor */
 struct reactor_private {
-    /** The file descriptor designated by epoll. */
-    int reactor_fd;
-    /** a map for all active file descriptors added to the reactor */
-    char *map;
-    /** the reactor's events array */
-    void *events;
+    int reactor_fd; /**< The file descriptor designated by epoll. */
+    char *map; /**< a map for all active file descriptors added to
+                    the reactor */
+    void *events; /** the reactor's events array */
 };
 #define PRIV(r) ((struct reactor_private *) (r->priv))
 
@@ -126,10 +124,8 @@ static void reactor_destroy(struct Reactor *reactor)
         free(PRIV(reactor)->events);
     if (PRIV(reactor)->reactor_fd)
         close(PRIV(reactor)->reactor_fd);
+
     free(PRIV(reactor));
-//    reactor->priv->map = NULL;
-//    reactor->priv->events = NULL;
-//    reactor->priv->reactor_fd = 0;
 }
 
 int reactor_init(struct Reactor *reactor)
@@ -179,7 +175,7 @@ int reactor_review(struct Reactor *reactor)
                 /* errors are hendled as disconnections (on_close) */
                 reactor_close(reactor, _GETFD_(i));
             } else {
-                /* no error, then it's an active event(s) */
+                /* no error, then it is an active event */
                 if (_EVENTREADY_(i) && reactor->on_ready)
                     reactor->on_ready(reactor, _GETFD_(i));
                 if (_EVENTDATA_(i) && reactor->on_data)
