@@ -30,7 +30,7 @@ static void greeting(void *arg)
 static void schedule_tasks2(void *arg)
 {
     clock_gettime(CLOCK_REALTIME, &now);
-    fprintf(stderr, "Schedule task at (%lf) ms\n", time_diff(start, now));
+    fprintf(stderr, "# schedule task at (%lf) ms\n", time_diff(start, now));
     async_p async = arg;
     for (size_t i = 0; i < (8 * 1024); i++) {
         Async.run(async, greeting, NULL);
@@ -39,13 +39,13 @@ static void schedule_tasks2(void *arg)
     Async.run(async, greeting, NULL);
     Async.signal(async);
     clock_gettime(CLOCK_REALTIME, &now);
-    printf("signal finish at (%lf) ms\n", time_diff(start, now));
+    printf("# signal finish at (%lf) ms\n", time_diff(start, now));
 }
 
 static void schedule_tasks(void *arg)
 {
     clock_gettime(CLOCK_REALTIME, &now);
-    fprintf(stderr, "Schedule task at (%lf) ms\n", time_diff(start, now));
+    fprintf(stderr, "# schedule task at (%lf) ms\n", time_diff(start, now));
     async_p async = arg;
     for (size_t i = 0; i < (8 * 1024); i++)
         Async.run(async, greeting, NULL);
@@ -55,7 +55,7 @@ static void schedule_tasks(void *arg)
 
 int main(void)
 {
-    fprintf(stderr, "%d Testing async library\n", getpid());
+    fprintf(stderr, "# Test async\n");
 
     /* create the thread pool with a single threads.
      * the callback is optional (we can pass NULL)
@@ -72,6 +72,6 @@ int main(void)
     /* wait for all tasks to finish, closing threads, clearing memory */
     Async.wait(async);
     clock_gettime(CLOCK_REALTIME, &now);
-    fprintf(stderr, "Finish (%lf) ms\n", time_diff(start, now));
+    fprintf(stderr, "# elapsed time: (%lf) ms\n", time_diff(start, now));
     return 0;
 }
