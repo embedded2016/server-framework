@@ -6,7 +6,6 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <fcntl.h>
-#include <sched.h>
 
 /* suppress compilation warnings */
 #undef write
