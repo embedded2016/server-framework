@@ -14,8 +14,7 @@
 static inline ssize_t write_wrapper(int fd, const void *buf, size_t count)
 {
     ssize_t s;
-    if ((s = write(fd, buf, count)) < count)
-        perror("write");
+    if ((s = write(fd, buf, count)) < count) perror("write");
     return s;
 }
 

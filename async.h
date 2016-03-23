@@ -1,5 +1,5 @@
-#ifndef LIB_ASYNC_2_H
-#define LIB_ASYNC_2_H
+#ifndef _ASYNC_H
+#define _ASYNC_H
 
 typedef struct Async *async_p;
 
