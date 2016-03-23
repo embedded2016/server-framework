@@ -10,6 +10,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* private data used by reactor */
+struct reactor_private {
+    /** The file descriptor designated by epoll. */
+    int reactor_fd;
+    /** a map for all active file descriptors added to the reactor */
+    char *map;
+    /** the reactor's events array */
+    void *events;
+};
+#define PRIV(r) ((struct reactor_private *) (r->priv))
+
 static inline
 int set_fd_polling(int queue, int fd, int action, long milliseconds)
 {
@@ -31,33 +42,33 @@ int set_fd_polling(int queue, int fd, int action, long milliseconds)
 
 int reactor_add(struct Reactor *reactor, int fd)
 {
-    assert(reactor->private.reactor_fd);
+    assert(PRIV(reactor)->reactor_fd);
     assert(reactor->maxfd >= fd);
     /*
      * the `on_close` callback was likely called already by the user,
      * before calling this, and a new handler was probably assigned
      * (or mapped) to the fd.
      */
-    reactor->private.map[fd] = 1;
-    return set_fd_polling(reactor->private.reactor_fd, fd,
+    PRIV(reactor)->map[fd] = 1;
+    return set_fd_polling(PRIV(reactor)->reactor_fd, fd,
                           EPOLL_CTL_ADD, 0);
 }
 
 int reactor_add_timer(struct Reactor *reactor, int fd, long milliseconds)
 {
-    assert(reactor->private.reactor_fd);
+    assert(PRIV(reactor)->reactor_fd);
     assert(reactor->maxfd >= fd);
-    reactor->private.map[fd] = 1;
-    return set_fd_polling(reactor->private.reactor_fd, fd,
+    PRIV(reactor)->map[fd] = 1;
+    return set_fd_polling(PRIV(reactor)->reactor_fd, fd,
                           EPOLL_CTL_ADD, milliseconds);
 }
 
 int reactor_remove(struct Reactor *reactor, int fd)
 {
-    assert(reactor->private.reactor_fd);
+    assert(PRIV(reactor)->reactor_fd);
     assert(reactor->maxfd >= fd);
-    reactor->private.map[fd] = 0;
-    return set_fd_polling(reactor->private.reactor_fd, fd,
+    PRIV(reactor)->map[fd] = 0;
+    return set_fd_polling(PRIV(reactor)->reactor_fd, fd,
                           EPOLL_CTL_DEL, 0);
 }
 
@@ -66,13 +77,13 @@ void reactor_close(struct Reactor *reactor, int fd)
     assert(reactor->maxfd >= fd);
     static pthread_mutex_t locker = PTHREAD_MUTEX_INITIALIZER;
     pthread_mutex_lock(&locker);
-    if (reactor->private.map[fd]) {
+    if (PRIV(reactor)->map[fd]) {
         close(fd);
-        reactor->private.map[fd] = 0;
+        PRIV(reactor)->map[fd] = 0;
         pthread_mutex_unlock(&locker);
         if (reactor->on_close)
             reactor->on_close(reactor, fd);
-        set_fd_polling(reactor->private.reactor_fd, fd, EPOLL_CTL_DEL, 0);
+        set_fd_polling(PRIV(reactor)->reactor_fd, fd, EPOLL_CTL_DEL, 0);
         return;
     }
     pthread_mutex_unlock(&locker);
@@ -91,44 +102,46 @@ int reactor_make_timer(void)
 }
 
 #define _WAIT_FOR_EVENTS_ \
-    epoll_wait(reactor->private.reactor_fd, \
-               ((struct epoll_event *) reactor->private.events), \
+    epoll_wait(PRIV(reactor)->reactor_fd, \
+               ((struct epoll_event *) PRIV(reactor)->events), \
                REACTOR_MAX_EVENTS, REACTOR_TICK)
 
 #define _GETFD_(_ev_) \
-    ((struct epoll_event *) reactor->private.events)[(_ev_)].data.fd
+    ((struct epoll_event *) PRIV(reactor)->events)[(_ev_)].data.fd
 #define _EVENTERROR_(_ev_) \
-    (((struct epoll_event *) reactor->private.events)[(_ev_)].events & \
+    (((struct epoll_event *) PRIV(reactor)->events)[(_ev_)].events & \
      (~(EPOLLIN | EPOLLOUT)))
 #define _EVENTREADY_(_ev_) \
-    (((struct epoll_event *) reactor->private.events)[(_ev_)].events & \
+    (((struct epoll_event *) PRIV(reactor)->events)[(_ev_)].events & \
      EPOLLOUT)
 #define _EVENTDATA_(_ev_) \
-    (((struct epoll_event *) reactor->private.events)[(_ev_)].events & \
+    (((struct epoll_event *) PRIV(reactor)->events)[(_ev_)].events & \
      EPOLLIN)
 
 static void reactor_destroy(struct Reactor *reactor)
 {
-    if (reactor->private.map)
-        free(reactor->private.map);
-    if (reactor->private.events)
-        free(reactor->private.events);
-    if (reactor->private.reactor_fd)
-        close(reactor->private.reactor_fd);
-    reactor->private.map = NULL;
-    reactor->private.events = NULL;
-    reactor->private.reactor_fd = 0;
+    if (PRIV(reactor)->map)
+        free(PRIV(reactor)->map);
+    if (PRIV(reactor)->events)
+        free(PRIV(reactor)->events);
+    if (PRIV(reactor)->reactor_fd)
+        close(PRIV(reactor)->reactor_fd);
+    free(PRIV(reactor));
+//    reactor->priv->map = NULL;
+//    reactor->priv->events = NULL;
+//    reactor->priv->reactor_fd = 0;
 }
 
 int reactor_init(struct Reactor *reactor)
 {
     if (reactor->maxfd <= 0) return -1;
-    reactor->private.reactor_fd = epoll_create1(0);
-    reactor->private.map = calloc(1, reactor->maxfd + 1);
-    reactor->private.events = calloc(sizeof(struct epoll_event),
+    reactor->priv = calloc(1, sizeof(struct reactor_private));
+    PRIV(reactor)->reactor_fd = epoll_create1(0);
+    PRIV(reactor)->map = calloc(1, reactor->maxfd + 1);
+    PRIV(reactor)->events = calloc(sizeof(struct epoll_event),
                                      REACTOR_MAX_EVENTS);
-    if (!reactor->private.reactor_fd || !reactor->private.map ||
-        !reactor->private.events) {
+    if (!PRIV(reactor)->reactor_fd || !PRIV(reactor)->map ||
+        !PRIV(reactor)->events) {
         reactor_destroy(reactor);
         return -1;
     }
@@ -137,10 +150,10 @@ int reactor_init(struct Reactor *reactor)
 
 void reactor_stop(struct Reactor *reactor)
 {
-    if (!reactor->private.map || !reactor->private.reactor_fd)
+    if (!PRIV(reactor)->map || !PRIV(reactor)->reactor_fd)
         return;
     for (int i = 0; i <= reactor->maxfd; i++) {
-        if (reactor->private.map[i]) {
+        if (PRIV(reactor)->map[i]) {
             if (reactor->on_shutdown)
                 reactor->on_shutdown(reactor, i);
             reactor_close(reactor, i);
@@ -151,7 +164,7 @@ void reactor_stop(struct Reactor *reactor)
 
 int reactor_review(struct Reactor *reactor)
 {
-    if (!reactor->private.reactor_fd) return -1;
+    if (!PRIV(reactor)->reactor_fd) return -1;
 
     /* set the last tick */
     time(&reactor->last_tick);

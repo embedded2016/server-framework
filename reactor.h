@@ -62,14 +62,8 @@ struct Reactor {
      */
     int maxfd;
 
-    struct {
-        /** The file descriptor designated by epoll. */
-        int reactor_fd;
-        /** a map for all active file descriptors added to the reactor */
-        char *map;
-        /** the reactor's events array */
-        void *events;
-    } private;
+    /* private data */
+    void *priv;
 };
 
 /**
