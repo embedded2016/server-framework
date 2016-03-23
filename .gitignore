@@ -1,4 +1,6 @@
 *.o
 *.d
 
-main
+# test programs
+test-async
+test-reactor
