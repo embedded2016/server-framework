@@ -1,4 +1,9 @@
-EXEC = test-async test-reactor
+EXEC = \
+	test-async \
+	test-reactor \
+	test-buffer \
+	test-protocol-server
+
 .PHONY: all
 all: $(EXEC)
 
@@ -8,10 +13,12 @@ LDFLAGS = -lpthread
 
 OBJS := \
 	async.o \
-	reactor.o
+	reactor.o \
+	buffer.o \
+	protocol-server.o
 deps := $(OBJS:%.o=%.o.d)
 
-test-%: %.o tests/test-%.c
+test-%: $(OBJS) tests/test-%.c
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 %.o: %.c
