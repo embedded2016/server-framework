@@ -81,7 +81,7 @@ struct Async {
  */
 static int async_run(async_p async, void (*task)(void *), void *arg)
 {
-    struct AsyncTask *c;  // c == container, this will store the task
+    struct AsyncTask *c;  /* the container, storing the task */
 
     if (!async || !task) return -1;
 
@@ -135,7 +135,7 @@ static void perform_tasks(async_p async)
             async->tasks = async->tasks->next;
         }
         pthread_mutex_unlock(&(async->lock));
-        // perform the task
+        /* perform the task */
         if (c) c->task(c->arg);
     } while (c);
 }
@@ -173,8 +173,8 @@ static void *worker_thread_cycle(void *_async)
 static void async_signal(async_p async)
 {
     async->run = 0;
-    // send `async->count` number of wakeup signales (data content is
-    // irrelevant)
+    /* send `async->count` number of wakeup signales.
+     * data content is irrelevant. */
     write(async->pipe.out, async, async->count);
 }
 
@@ -227,7 +227,7 @@ static void async_destroy(async_p async)
     pthread_mutex_lock(&async->lock);
     struct AsyncTask *to_free;
     async->pos = NULL;
-    // free all tasks
+    /* free all tasks */
     struct AsyncTask *pos = async->tasks;
     while ((to_free = pos)) {
         pos = pos->next;
