@@ -233,7 +233,7 @@ void add_to_group_task(struct Server *server, int fd, void *arg);
 /* The following allows access to helper functions and defines
  * a namespace for the API
  */
-const struct Server__API____ Server = {
+const struct __SERVER_API__ Server = {
     .reactor = srv_reactor,
     .settings = srv_settings,
     .capacity = srv_capacity,

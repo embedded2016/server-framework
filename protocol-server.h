@@ -118,7 +118,7 @@ struct ServerSettings {
 * `Server` object. That is,
 *     Server.listen(struct ServerSettings { ... });
 */
-extern const struct Server__API____ {
+extern const struct __SERVER_API__ {
     /** @return the originating process pid */
     pid_t (*root_pid)(struct Server * server);
 
