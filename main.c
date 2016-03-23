@@ -47,10 +47,10 @@ static void schedule_tasks(void *arg)
     clock_gettime(CLOCK_REALTIME, &now);
     fprintf(stderr, "Schedule task at (%lf) ms\n", time_diff(start, now));
     async_p async = arg;
-    for (size_t i = 0; i < (8 * 1024); i++) {
+    for (size_t i = 0; i < (8 * 1024); i++)
         Async.run(async, greeting, NULL);
-    }
-    Async.run(async, schedule_tasks2, async);
+    Async.run(async,
+              schedule_tasks2, async /* as the argument to tasks2 */);
 }
 
 int main(void)
