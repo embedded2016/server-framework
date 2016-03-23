@@ -2,7 +2,8 @@ EXEC = \
 	test-async \
 	test-reactor \
 	test-buffer \
-	test-protocol-server
+	test-protocol-server \
+	httpd
 
 .PHONY: all
 all: $(EXEC)
@@ -17,6 +18,9 @@ OBJS := \
 	buffer.o \
 	protocol-server.o
 deps := $(OBJS:%.o=%.o.d)
+
+httpd: $(OBJS) httpd.c
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 test-%: $(OBJS) tests/test-%.c
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
