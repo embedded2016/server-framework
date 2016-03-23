@@ -5,8 +5,9 @@ EXEC = \
 	test-protocol-server \
 	httpd
 
+OUT ?= .build
 .PHONY: all
-all: $(EXEC)
+all: $(OUT) $(EXEC)
 
 CC ?= gcc
 CFLAGS = -std=gnu99 -Wall -O2 -g -I .
@@ -18,6 +19,8 @@ OBJS := \
 	buffer.o \
 	protocol-server.o
 deps := $(OBJS:%.o=%.o.d)
+OBJS := $(addprefix $(OUT)/,$(OBJS))
+deps := $(addprefix $(OUT)/,$(deps))
 
 httpd: $(OBJS) httpd.c
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
@@ -25,10 +28,14 @@ httpd: $(OBJS) httpd.c
 test-%: $(OBJS) tests/test-%.c
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-%.o: %.c
+$(OUT)/%.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ -MMD -MF $@.d $<
+
+$(OUT):
+	@mkdir -p $@
 
 clean:
 	$(RM) $(EXEC) $(OBJS) $(deps)
+	@rm -rf $(OUT)
 
 -include $(deps)
