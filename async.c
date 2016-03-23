@@ -8,14 +8,14 @@
 #include <fcntl.h>
 
 /* suppress compilation warnings */
-#undef write
-#define write write_wrapper
 static inline ssize_t write_wrapper(int fd, const void *buf, size_t count)
 {
     ssize_t s;
     if ((s = write(fd, buf, count)) < count) perror("write");
     return s;
 }
+#undef write
+#define write write_wrapper
 
 /* the actual working thread */
 static void *worker_thread_cycle(void *async);
