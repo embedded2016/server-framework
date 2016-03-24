@@ -1060,7 +1060,7 @@ struct GroupTask *new_group_task(server_pt srv)
 {
     struct GroupTask *ret = NULL;
     pthread_mutex_lock(&srv->task_lock);
-    if (srv->fd_task_pool) {
+    if (srv->group_task_pool) {
         ret = srv->group_task_pool;
         srv->group_task_pool = srv->group_task_pool->next;
         --srv->group_task_pool_size;
