@@ -62,3 +62,8 @@ int main(void) {
   start_server(.protocol = &protocol, .timeout = 10, .threads = 8);
 }
 ```
+
+Documentation
+-------------
+The code is heavily commented, and you can generate API documentation via
+Doxygen. Check the directory `html` for details.
