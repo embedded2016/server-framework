@@ -13,7 +13,7 @@
 
 /**
  * \brief [Reactor pattern](https://en.wikipedia.org/wiki/Reactor_pattern)
- *        implementation using callbacks
+ *        implementation using callbacks as Linux epoll abstraction
  *
  * Supported events (and corresponding callbacks):
  *  - Ready to Read (`on_data` callback).
