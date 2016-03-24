@@ -32,8 +32,10 @@ void done_printing(server_pt srv, int fd, void *arg)
 
 void timer_task(server_pt srv)
 {
-    Server.each(srv, NULL, print_conn, NULL, done_printing);
-    fprintf(stderr, "Clients: %lu\n", Server.count(srv, NULL));
+    size_t count = Server.each(srv, 0,
+                               NULL, print_conn,
+                               NULL, done_printing);
+    fprintf(stderr, "Clients: %lu\n", count);
 }
 
 void on_init(server_pt srv)

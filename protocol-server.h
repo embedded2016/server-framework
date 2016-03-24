@@ -411,34 +411,50 @@ extern const struct __SERVER_API__ {
     //@{
 
     /**
-     * Schedule a specific task to run asyncronously for each connection.
+     * Schedule a specific task to run asyncronously for each connection
+     * (except the origin connection).
      * A NULL service identifier == all connections (all protocols).
      *
+     * The task is performed within each target connection's busy "lock",
+     * meanning no two tasks (or `on_data` events) should be performed at
+     * the same time (concurrency will be avoided within the context of each
+     * connection, except for `on_shutdown`, `on_close` and `ping`).
+     *
      * The `on_finish` callback will be called once the task is finished.
-     * Although `on_finish` will receive the originating fd, data should not
-     * be sent back to the original fd, as it might have closed by the time
-     * the tasks have all been performed - and worse, it might have been
-     * re-used and it might represent a different client!
+     * Although `on_finish` will receive the originating fd (could be 0),
+     * data shouldn't be sent back to the original fd, as it might have
+     * closed by the time the tasks have all been performed - and worse,
+     * it might have been re-used and it might represent a different client!
+     *
+     * `each` will accept 0 as the originating fd, if no fd is available -
+     * the value will not be checked for errors. If the `fd` is valid, the
+     * `on_finish` callback will be performed within the connection's busy
+     * "lock".
      *
      * It is recommended the `on_finish` callback is only used to perform
      * any resource cleanup necessary.
      */
-    int (*each)(struct Server *server, char *service,
-                void (*task)(struct Server *server, int fd, void *arg),
+    int (*each)(struct Server *server, int origin_fd,
+                char *service,
+                void (*task)(struct Server *server,
+                             int target_fd, void *arg),
                 void *arg,
-                void (*on_finish)(struct Server *server, int fd, void *arg));
+                void (*on_finish)(struct Server *server,
+                                  int origin_fd, void *arg));
 
     /**
-     * Schedule a specific task to run for each connection. The tasks will be
-     * performed sequencially, in a blocking manner. The method will only
-     * return once all the tasks were completed.
+     * Schedule a specific task to run for each connection (except the
+     * origin connection). The tasks will be performed sequencially,
+     * in a blocking manner. The method will only return once all the
+     * tasks were completed.
      * A NULL service identifier == all connections (all protocols).
      *
      * The task, although performed on each connection, will be performed
      * within the calling connection's lock, so be careful as for possible
      * race conditions.
      */
-    int (*each_block)(struct Server *server, char *service,
+    int (*each_block)(struct Server *server, int fd_originator,
+                      char *service,
                       void (*task)(struct Server*server, int fd, void *arg),
                       void *arg);
 
