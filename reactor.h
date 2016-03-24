@@ -73,6 +73,7 @@ struct Reactor {
 
 /**
  * \brief Initialize the reactor, making the reactor "live".
+ * \public \memberof Reactor
  *
  * Once initialized, the reactor CANNOT be forked, so do not fork
  * the process after calling `reactor_init`, or data corruption will
@@ -84,6 +85,7 @@ int reactor_init(struct Reactor *);
 
 /**
  * \brief Review any pending events (up to REACTOR_MAX_EVENTS)
+ * \public \memberof Reactor
  * @return -1 on error
  * @return the number of events handled by the reactor.
  */
@@ -91,6 +93,7 @@ int reactor_review(struct Reactor *);
 
 /**
  * \brief Close the reactor, releasing its resources
+ * \public \memberof Reactor
  * The resources to be released do not include the actual struct Reactor,
  * which might have been allocated on the stack and should be handled by
  * the caller).
@@ -99,6 +102,7 @@ void reactor_stop(struct Reactor *);
 
 /**
  * \brief Add a file descriptor to the reactor
+ * \public \memberof Reactor
  * Callbacks will be called for its events.
  * @return -1 on error
  */
@@ -106,6 +110,7 @@ int reactor_add(struct Reactor *, int fd);
 
 /**
  * \brief Remove a file descriptor from the reactor.
+ * \public \memberof Reactor
  * Further callbacks will not be called.
  * @return -1 on error
  * @return other.  If the file descriptor was not
@@ -115,23 +120,27 @@ int reactor_remove(struct Reactor *, int fd);
 
 /**
  * \brief Close a file descriptor
+ * \public \memberof Reactor
  * Execute its callback if it was registered with the reactor.
 */
 void reactor_close(struct Reactor *, int fd);
 
 /**
  * \brief Add a file descriptor as a timer object.
+ * \public \memberof Reactor
  * @return -1 on error
  */
 int reactor_add_timer(struct Reactor *, int fd, long milliseconds);
 
 /**
- * the timer will be repeated when running on epoll.
+ * \brief the timer will be repeated when running on epoll.
+ * \public \memberof Reactor
  */
 void reactor_reset_timer(int fd);
 
 /**
  * \brief Open a new file decriptor for creating timer events.
+ * \public \memberof Reactor
  * @return -1 on error
  * @return the file descriptor
  */

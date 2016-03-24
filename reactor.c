@@ -135,7 +135,7 @@ int reactor_init(struct Reactor *reactor)
     PRIV(reactor)->reactor_fd = epoll_create1(0);
     PRIV(reactor)->map = calloc(1, reactor->maxfd + 1);
     PRIV(reactor)->events = calloc(sizeof(struct epoll_event),
-                                     REACTOR_MAX_EVENTS);
+                                   REACTOR_MAX_EVENTS);
     if (!PRIV(reactor)->reactor_fd || !PRIV(reactor)->map ||
         !PRIV(reactor)->events) {
         reactor_destroy(reactor);

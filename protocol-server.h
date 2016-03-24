@@ -35,7 +35,8 @@ struct Protocol; /**< controls connection events */
 #define start_server(...) \
     Server.listen((struct ServerSettings){__VA_ARGS__})
 
-/* The Protocol
+/**
+ * \brief The Protocol
  *
  * Protocol struct defines the callbacks used for the connection and
  * sets the behaviour for the connection's protocol.
@@ -384,7 +385,7 @@ extern const struct __SERVER_API__ {
      * @return  0 on success
      */
     ssize_t (*write_move_urgent)(server_pt srv, int sockfd,
-                                 void* data, size_t len);
+                                 void *data, size_t len);
 
     /**
      * Send a whole file as if it were a single atomic packet.
