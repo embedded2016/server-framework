@@ -8,6 +8,14 @@
 #include "reactor.h"
 #include "async.h"
 
+/** \mainpage
+ * \section intro_sec Introduction
+ *
+ * Using this framework to build your own services is simple to use. It is
+ * based on Protocol structure and callbacks, so that you can change protocols
+ * and support stuff such as HTTP requests dynamically.
+ */
+
 /** \file
  * protocol-server manages everything that makes a server run, including
  * the thread pool, process forking, accepting new connections, setting up
@@ -33,14 +41,12 @@ struct Protocol; /**< controls connection events */
  * sets the behaviour for the connection's protocol.
 */
 struct Protocol {
-    /** a string to identify the protocol's service (i.e. "http"). */
     char *service; /**< a string to identify the protocol's service
-                        such as. "http". */
+                        such as "http". */
     void (*on_open)(struct Server *,
                     int sockfd); /**< called when a connection is opened */
     void (*on_data)(struct Server *,
                     int sockfd); /**< called when a data is available */
-    /** called when the socket is ready to be written to. */
     void (*on_ready)(struct Server *,
                      int sockfd); /**< called when the socket is ready
                                        to be written to. */
@@ -56,7 +62,7 @@ struct Protocol {
 };
 
 /**
- * The Server Settings
+ * \brief The Server Settings
  *
  * These settings will be used to setup server behavior. Missing settings
  * will be filled in with default values. only the `protocol` setting, which
@@ -124,6 +130,9 @@ struct ServerSettings {
 * @endcode
 */
 extern const struct __SERVER_API__ {
+    /** @name Server settings and objects */
+    //@{
+
     /** return the originating process pid */
     pid_t (*root_pid)(struct Server * server);
 
@@ -141,8 +150,10 @@ extern const struct __SERVER_API__ {
      * file descriptors for response processing.
      */
     long (*capacity)(void);
+    //@}
 
-    /* Server actions */
+    /** @name Server actions */
+    //@{
 
     /**
      * Listen to a server with the following server settings (which MUST
@@ -199,8 +210,10 @@ extern const struct __SERVER_API__ {
      * up to 255 seconds (the maximum allowed timeout count). */
     void (*set_timeout)(struct Server *server, int sockfd,
                         unsigned char timeout);
+    //@}
 
-    /* Socket actions */
+    /** @name Socket actions */
+    //@{
 
     /**
      * Attach an existing connection (fd) to the server's reactor and
@@ -230,8 +243,10 @@ extern const struct __SERVER_API__ {
 
     /** Manipulate a socket, reseting its timeout counter */
     void (*touch)(struct Server *server, int sockfd);
+    //@}
 
-    /* Read and Write */
+    /** @name Read and Write */
+    //@{
 
     /**
      * Set up the read/write hooks, allowing for transport layer extensions
@@ -378,8 +393,10 @@ extern const struct __SERVER_API__ {
      * The file will be buffered to the socket chunk by chunk.
      */
     ssize_t (*sendfile)(server_pt srv, int sockfd, FILE *file);
+    //@}
 
-    /* Tasks + Async */
+    /** @name Tasks + Async */
+    //@{
 
     /**
      * Schedule a specific task to run asyncronously for each connection.
@@ -469,6 +486,7 @@ extern const struct __SERVER_API__ {
      */
     int (*run_every)(struct Server *self, long milliseconds, int repetitions,
                      void task(void *), void *arg);
+    //@}
 } Server;
 
 #endif

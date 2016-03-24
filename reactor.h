@@ -11,6 +11,8 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
+/** \file */
+
 /**
  * \brief [Reactor pattern](https://en.wikipedia.org/wiki/Reactor_pattern)
  *        implementation using callbacks as Linux epoll abstraction
@@ -23,7 +25,8 @@
  *    descriptor is closed and `on_close` callback is fired).
  */
 struct Reactor {
-    /* File Descriptor Callbacks */
+    /** @name File Descriptor Callbacks */
+    //@{
 
     /**
      * \brief Called when the file descriptor has incoming data.
@@ -48,8 +51,10 @@ struct Reactor {
      * unless using `reactor_close` function.
      */
     void (*on_close)(struct Reactor *reactor, int fd);
+    //@}
 
-    /* global data and settings */
+    /** @name global data and settings */
+    //@{
 
     /** the time (seconds since epoch) of the last "tick" (event cycle) */
     time_t last_tick;
@@ -59,9 +64,11 @@ struct Reactor {
      * be required to handle (the capacity -1).
      */
     int maxfd;
+    //@}
 
-    /* private data */
+    /** \cond private data */
     void *priv;
+    /** \endcond */
 };
 
 /**

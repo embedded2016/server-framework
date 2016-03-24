@@ -116,7 +116,7 @@ struct Buffer {
     size_t sent; /**< the amount of data sent from the first packet */
     pthread_mutex_t lock; /**< a mutex preventing buffer corruption */
 
-    /**< a writing hook, allowing for SSL sockets or other extensions. */
+    /** a writing hook, allowing for SSL sockets or other extensions. */
     ssize_t (*writing_hook)(server_pt srv, int fd, void* data, size_t len);
     server_pt owner; /**< the buffer's owner */
 };
@@ -150,8 +150,9 @@ static inline void *new_buffer(server_pt owner)
 
 /* clears all the buffer data */
 static inline
-void clear_buffer(struct Buffer *buffer)
+void clear_buffer(void *buf)
 {
+    struct Buffer *buffer = buf;
     if (is_buffer(buffer)) {
         pthread_mutex_lock(&buffer->lock);
         struct Packet* to_free = NULL;
@@ -164,17 +165,19 @@ void clear_buffer(struct Buffer *buffer)
     }
 }
 
-void set_whook(struct Buffer *buffer,
+void set_whook(void *buf,
                ssize_t (*writing_hook)(server_pt srv, int fd,
                                        void *data, size_t len))
 {
+    struct Buffer *buffer = buf;
     if (is_buffer(buffer))
         buffer->writing_hook = writing_hook;
 }
 
 static inline
-void destroy_buffer(struct Buffer *buffer)
+void destroy_buffer(void *buf)
 {
+    struct Buffer *buffer = buf;
     if (is_buffer(buffer)) {
         clear_buffer(buffer);
         pthread_mutex_destroy(&buffer->lock);
@@ -210,11 +213,10 @@ insert_packets_to_buffer(struct Buffer *buffer, struct Packet *packet,
 }
 
 static inline
-size_t buffer_move_logic(struct Buffer *buffer,
-                         void *data,
-                                       size_t length,
-                                       char urgent)
+size_t buffer_move_logic(void *buf, void *data,
+                         size_t length, char urgent)
 {
+    struct Buffer *buffer = buf;
     if (!is_buffer(buffer)) return 0;
     if (!length || !data) {
         /* FIXME: warn the messages:
@@ -236,21 +238,23 @@ size_t buffer_move_logic(struct Buffer *buffer,
     return length;
 }
 
-static size_t buffer_move(struct Buffer *buffer, void *data, size_t length)
+static size_t buffer_move(void *buf, void *data, size_t length)
 {
+    struct Buffer *buffer = buf;
     return buffer_move_logic(buffer, data, length, 0);
 }
 
-static size_t buffer_move_next(struct Buffer*buffer,
-                               void *data, size_t length)
+static size_t buffer_move_next(void *buf, void *data, size_t length)
 {
+    struct Buffer*buffer = buf;
     return buffer_move_logic(buffer, data, length, 1);
 }
 
 static size_t
-buffer_copy_logic(struct Buffer *buffer, void *data,
+buffer_copy_logic(void *buf, void *data,
                   size_t length, char urgent)
 {
+    struct Buffer *buffer = buf;
     if (!length || !data) {
         /* FIXME: warn the message
          * "Buffer: Canot copy data because either length (%lu) or
@@ -301,19 +305,21 @@ buffer_copy_logic(struct Buffer *buffer, void *data,
     return length;
 }
 
-static size_t buffer_copy(struct Buffer* buffer, void *data, size_t length)
+static size_t buffer_copy(void *buf, void *data, size_t length)
 {
+    struct Buffer* buffer = buf;
     return buffer_copy_logic(buffer, data, length, 0);
 }
 
-static size_t
-buffer_copy_next(struct Buffer *buffer, void *data, size_t length)
+static size_t buffer_copy_next(void *buf, void *data, size_t length)
 {
+    struct Buffer *buffer = buf;
     return buffer_copy_logic(buffer, data, length, 1);
 }
 
-static ssize_t buffer_flush(struct Buffer* buffer, int fd)
+static ssize_t buffer_flush(void *buf, int fd)
 {
+    struct Buffer *buffer = buf;
     if (!is_buffer(buffer)) return -1;
 
     ssize_t sent = 0;
@@ -397,8 +403,9 @@ start_flush:
     return sent;
 }
 
-static int buffer_sendfile(struct Buffer *buffer, FILE *file)
+static int buffer_sendfile(void *buf, FILE *file)
 {
+    struct Buffer *buffer = buf;
     if (!is_buffer(buffer)) return -1;
 
     struct Packet *np = get_packet();
@@ -410,8 +417,9 @@ static int buffer_sendfile(struct Buffer *buffer, FILE *file)
     return 0;
 }
 
-static void buffer_close_w_d(struct Buffer* buffer, int fd)
+static void buffer_close_w_d(void *buf, int fd)
 {
+    struct Buffer *buffer = buf;
     if (!is_buffer(buffer)) return;
     if (!buffer->packet) {
         close(fd);
@@ -450,23 +458,24 @@ size_t buffer_pending(struct Buffer *buffer)
     return len;
 }
 
-char buffer_is_empty(struct Buffer* buffer)
+char buffer_is_empty(void *buf)
 {
+    struct Buffer *buffer = buf;
     return (!is_buffer(buffer)) ? 1 : (buffer->packet == NULL);
 }
 
-/* API Interface */
+/* API gateway */
 const struct BufferClass Buffer = {
     .new = new_buffer,
-    .destroy = (void (*)(void *)) destroy_buffer,
-    .clear = (void (*)(void *)) clear_buffer,
-    .set_whook = (void (*)(void *, ssize_t (*)())) set_whook,
-    .sendfile = (int (*)(void *, FILE *)) buffer_sendfile,
-    .write = (size_t (*)(void *, void *, size_t)) buffer_copy,
-    .write_move = (size_t (*)(void *, void *, size_t)) buffer_move,
-    .write_next = (size_t (*)(void *, void *, size_t)) buffer_copy_next,
-    .write_move_next = (size_t (*)(void *, void *, size_t)) buffer_move_next,
-    .flush = (ssize_t (*)(void *, int)) buffer_flush,
-    .close_when_done = (void (*)(void *, int)) buffer_close_w_d,
-    .is_empty = (char (*)(void *)) buffer_is_empty,
+    .destroy = destroy_buffer,
+    .clear = clear_buffer,
+    .set_whook = set_whook,
+    .sendfile = buffer_sendfile,
+    .write = buffer_copy,
+    .write_move = buffer_move,
+    .write_next = buffer_copy_next,
+    .write_move_next = buffer_move_next,
+    .flush = buffer_flush,
+    .close_when_done = buffer_close_w_d,
+    .is_empty = buffer_is_empty,
 };

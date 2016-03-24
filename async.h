@@ -1,7 +1,11 @@
 #ifndef _ASYNC_H
 #define _ASYNC_H
 
+/** \cond */
 typedef struct Async *async_p;
+/** \endcond */
+
+/** \file */
 
 /**
  * \brief A simple thread pool utilizing POSIX threads
@@ -16,9 +20,9 @@ typedef struct Async *async_p;
  *   Async.finish(async); // signal and wait, then the object self-destructs
  * @endcode
  *
- * Please note, the implementation is not fork-friendly. In general, mixing
- * `fork` with multi-threading is not safe nor trivial - always fork before
- * multi-threading.
+ * @note The implementation is not fork-friendly. In general, mixing `fork`
+ *       with multi-threading is not safe nor trivial - always fork before
+ *       multi-threading.
  */
 extern struct __ASYNC_API__ {
     /**

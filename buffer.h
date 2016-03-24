@@ -4,6 +4,8 @@
 #include <sys/types.h>
 #include "protocol-server.h"
 
+/** \file */
+
 /**
  * \brief packet-based Buffer object for network data output.
  *
