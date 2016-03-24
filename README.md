@@ -15,7 +15,7 @@
 
 Using this framework to build your own services is simple to use. It is
 based on Protocol structure and callbacks, so that we can dynamically change
-protocols and support stuff like HTTP upgrade requests.
+protocols and support stuff such as HTTP requests.
 
 Here is a simple example:
 ```c
@@ -31,9 +31,9 @@ void on_close(server_pt server, int sockfd) {
     printf("Socket #%d is now disconnected.\n", sockfd);
 }
 
-/* a simple echo implementation: the main callback */
+// simple echo implementation: the main callback
 void on_data(server_pt server, int sockfd) {
-    /* We will assign a reading buffer on the stack
+    // We will assign a reading buffer on the stack
     char buff[1024];
     ssize_t incoming = 0;
     // Read everything, this is edge triggered, `on_data` won't be called
@@ -43,8 +43,7 @@ void on_data(server_pt server, int sockfd) {
         // otherwise, we would avoid a copy using Server.write_move
         Server.write(server, sockfd, buff, incoming);
         if (!memcmp(buff, "bye", 3)) {
-            // closes the connection automatically AFTER
-            // all the buffer was sent.
+            // close the connection automatically AFTER the buffer was sent.
             Server.close(server, sockfd);
         }
     }
