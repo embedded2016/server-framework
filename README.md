@@ -1,5 +1,11 @@
 # Server Framework in Modern C
 
+It is simple to use this framework to build your own service. It is
+based on Protocol structure and callbacks, so that we can dynamically
+change protocols and support stuff such as HTTP requests.
+
+The framework consists of the following components:
+
 * [`async`](async.h): A native POSIX thread pool.
   - It uses a combination of a pipe (for wakeup signals) and
     mutexes (for managing the task queue).
@@ -12,10 +18,6 @@
     the thread pool, process forking, accepting new connections, setting up
     the initial protocol for new connections, and user space socket writing
     buffers.
-
-Using this framework to build your own services is simple to use. It is
-based on Protocol structure and callbacks, so that we can dynamically change
-protocols and support stuff such as HTTP requests.
 
 Here is a simple example:
 ```c
