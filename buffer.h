@@ -109,7 +109,7 @@ extern const struct BufferClass {
     /**
      * \brief Flush the buffer data through the socket
      * @return the number of bytes sent, if any.
-     * @return -1 on error
+     * @return -1 on error.
      */
     ssize_t (*flush)(void *buffer, int fd);
 
@@ -157,11 +157,11 @@ extern const struct BufferClass {
     /**
      * \brief Mark the connection to closes once the current
      *        buffer data was sent.
-    */
+     */
     void (*close_when_done)(void *buffer, int fd);
 
     /**
-     * @return true (1) if the buffer is empty
+     * @return true (1) if the buffer is empty.
      */
     char (*is_empty)(void *buffer);
 } Buffer;

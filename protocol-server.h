@@ -21,17 +21,23 @@
  * the thread pool, process forking, accepting new connections, setting up
  * the initial protocol for new connections, and user space socket writing
  * buffers.
+ * @example test-protocol-server.c
 */
 
-struct Server; /**< used internally. no public data exposed */
-typedef struct Server *server_pt; /**< a pointer to a server object */
-struct ServerSettings; /**< sets up the server's behavior */
-struct Protocol; /**< controls connection events */
+/** \internal */
+struct Server;
+
+/** a pointer to a server object */
+typedef struct Server *server_pt;
+
+/** sets up the server's behavior */
+struct ServerSettings;
 
 /**
- * The start_server(...) macro is a shortcut that allows to easily create
- * a ServerSettings structure and start the server is a simple manner.
-*/
+ * \def start_server
+ * A shortcut that allows to easily create a ServerSettings structure and
+ * start the server is a simple manner.
+ */
 #define start_server(...) \
     Server.listen((struct ServerSettings){__VA_ARGS__})
 
@@ -40,7 +46,7 @@ struct Protocol; /**< controls connection events */
  *
  * Protocol struct defines the callbacks used for the connection and
  * sets the behaviour for the connection's protocol.
-*/
+ */
 struct Protocol {
     char *service; /**< a string to identify the protocol's service
                         such as "http". */
@@ -84,7 +90,7 @@ struct ServerSettings {
     void (*on_finish)(struct Server *server);
 
     /** called whenever an event loop had cycled (a "tick"). */
-    void (*on_tick)(struct Server*server);
+    void (*on_tick)(struct Server *server);
 
     /** called if an event loop cycled with no pending events. */
     void (*on_idle)(struct Server *server);
@@ -135,10 +141,10 @@ extern const struct __SERVER_API__ {
     //@{
 
     /** return the originating process pid */
-    pid_t (*root_pid)(struct Server * server);
+    pid_t (*root_pid)(struct Server *server);
 
     /** Allow direct access to the reactor object */
-    struct Reactor *(*reactor)(struct Server* server);
+    struct Reactor *(*reactor)(struct Server *server);
 
     /** Allow direct access to the server's original settings */
     struct ServerSettings *(*settings)(struct Server *server);
@@ -172,10 +178,11 @@ extern const struct __SERVER_API__ {
     /** stops any and all server instances, closing any open connections. */
     void (*stop_all)(void);
 
-    /* Socket settings and data */
+    /** @name Socket settings and data */
+    //@{
 
     /**
-     * @return true if a specific connection's protected callback is running
+     * @return true if a specific connection's protected callback is running.
      * Protected callbacks include only the `on_message` callback and tasks
      * forwarded to the connection using the `td_task` or `each` functions.
      */
@@ -187,9 +194,9 @@ extern const struct __SERVER_API__ {
 
     /**
      * Set the active protocol object for the requested file descriptor.
-     * @return -1 on error (i.e. connection closed)
-     * @return  0 otherwise
-    */
+     * @return -1 on error (i.e. connection closed).
+     * @return  0 otherwise.
+     */
     int (*set_protocol)(struct Server *server,
                         int sockfd,
                         struct Protocol *new_protocol);
@@ -204,7 +211,8 @@ extern const struct __SERVER_API__ {
     void *(*get_udata)(struct Server *server, int sockfd);
 
     /** Set the opaque pointer to be associated with the connection.
-     * @return the old pointer, if any. */
+     * @return the old pointer, if any.
+     */
     void *(*set_udata)(struct Server *server, int sockfd, void *udata);
 
     /** Set the timeout limit for the specified connectionl, in seconds,
@@ -227,7 +235,8 @@ extern const struct __SERVER_API__ {
     /**
      * \brief Close the connection.
      * If any data is waiting to be written, close will return immediately
-     * and the connection will only be closed once all the data was sent. */
+     * and the connection will only be closed once all the data was sent.
+     */
     void (*close)(struct Server *server, int sockfd);
 
     /**
@@ -235,11 +244,13 @@ extern const struct __SERVER_API__ {
      * resources. The control of hte socket is totally relinquished.
      *
      * This method will block until all the data in the buffer is sent
-     * before releasing control of the socket. */
+     * before releasing control of the socket.
+     */
     int (*hijack)(struct Server *server, int sockfd);
 
     /** Count the number of connections for the specified protocol
-     * (NULL = all protocols). */
+     * (NULL = all protocols).
+     */
     long (*count)(struct Server *server, char *service);
 
     /** Manipulate a socket, reseting its timeout counter */
@@ -338,8 +349,8 @@ extern const struct __SERVER_API__ {
     /** Copy and write data to the socket, managing an asyncronous buffer.
      * @return 0 on success. success means that the data is in a buffer
      *           waiting to be written. If the socket is forced to close
-     *           at this point, the buffer will be destroyed (never sent)
-     * @return -1 on error
+     *           at this point, the buffer will be destroyed (never sent).
+     * @return -1 on error.
      */
     ssize_t (*write)(server_pt srv, int sockfd, void *data, size_t len);
 
@@ -349,8 +360,8 @@ extern const struct __SERVER_API__ {
      *
      * Once the data was written, `free` will be called to free the data's
      * memory.
-     * @return -1 on error
-     * @return  0 on success
+     * @return -1 on error.
+     * @return  0 on success.
      */
     ssize_t (*write_move)(server_pt srv, int sockfd, void *data, size_t len);
 
@@ -362,8 +373,8 @@ extern const struct __SERVER_API__ {
      * The `urgent` varient will send the data as soon as possible, without
      * distrupting any data packages (data written using `write` will not
      * be interrupted in the middle).
-     * @return -1 on error
-     * @return  0 on success
+     * @return -1 on error.
+     * @return  0 on success.
      */
     ssize_t (*write_urgent)(server_pt srv, int sockfd,
                             void *data, size_t len);
@@ -381,8 +392,8 @@ extern const struct __SERVER_API__ {
      * The `urgent` varient will send the data as soon as possible, without
      * distrupting any data packages (data written using `write` will not
      * be interrupted in the middle).
-     * @return -1 on error
-     * @return  0 on success
+     * @return -1 on error.
+     * @return  0 on success.
      */
     ssize_t (*write_move_urgent)(server_pt srv, int sockfd,
                                  void *data, size_t len);
@@ -434,7 +445,7 @@ extern const struct __SERVER_API__ {
     /**
      * Schedule a specific task to run asyncronously for
      * a specific connection.
-     * @return -1 on failure
+     * @return -1 on failure.
      * @return  0 on success (success being scheduling the task).
      *
      * If a connection was terminated before performing their sceduled
@@ -464,13 +475,13 @@ extern const struct __SERVER_API__ {
     /**
      * Create a system timer (at the cost of 1 file descriptor) and push
      * the timer to the reactor. The task will NOT repeat.
-     * @return -1 on error
+     * @return -1 on error.
      * @return the new file descriptor on succeess.
      *
      * NOTICE: Do NOT create timers from within the on_close callback, as
      * this might block resources from being properly freed (if the timer
      * and the on_close object share the same fd number).
-    */
+     */
     int (*run_after)(struct Server *self, long milliseconds,
                      void task(void *), void *arg);
 
@@ -478,7 +489,7 @@ extern const struct __SERVER_API__ {
      * Create a system timer (at the cost of 1 file descriptor) and push
      * the timer to the reactor. The task will repeat `repetitions` times.
      * if `repetitions` is set to 0, task will repeat forever.
-     * @return -1 on error
+     * @return -1 on error.
      * @return the new file descriptor on succeess.
      *
      * NOTICE: Do NOT create timers from within the on_close callback, as

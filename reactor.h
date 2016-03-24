@@ -11,7 +11,9 @@
 #include <sys/time.h>
 #include <sys/types.h>
 
-/** \file */
+/** \file
+ * @example: test-reactor.c
+ */
 
 /**
  * \brief [Reactor pattern](https://en.wikipedia.org/wiki/Reactor_pattern)
@@ -78,15 +80,15 @@ struct Reactor {
  * Once initialized, the reactor CANNOT be forked, so do not fork
  * the process after calling `reactor_init`, or data corruption will
  * be experienced.
- * @return -1 on error
- * @return 0  otherwise
+ * @return -1 on error.
+ * @return 0  otherwise.
  */
 int reactor_init(struct Reactor *);
 
 /**
  * \brief Review any pending events (up to REACTOR_MAX_EVENTS)
  * \public \memberof Reactor
- * @return -1 on error
+ * @return -1 on error.
  * @return the number of events handled by the reactor.
  */
 int reactor_review(struct Reactor *);
@@ -104,7 +106,7 @@ void reactor_stop(struct Reactor *);
  * \brief Add a file descriptor to the reactor
  * \public \memberof Reactor
  * Callbacks will be called for its events.
- * @return -1 on error
+ * @return -1 on error.
  */
 int reactor_add(struct Reactor *, int fd);
 
@@ -112,9 +114,9 @@ int reactor_add(struct Reactor *, int fd);
  * \brief Remove a file descriptor from the reactor.
  * \public \memberof Reactor
  * Further callbacks will not be called.
- * @return -1 on error
- * @return other.  If the file descriptor was not
- *         owned by the reactor, it is not an error.
+ * @return -1 on error.
+ * @return other.  If the file descriptor was not owned by the reactor,
+ *         it is not an error.
  */
 int reactor_remove(struct Reactor *, int fd);
 
@@ -128,7 +130,7 @@ void reactor_close(struct Reactor *, int fd);
 /**
  * \brief Add a file descriptor as a timer object.
  * \public \memberof Reactor
- * @return -1 on error
+ * @return -1 on error.
  */
 int reactor_add_timer(struct Reactor *, int fd, long milliseconds);
 
@@ -141,8 +143,8 @@ void reactor_reset_timer(int fd);
 /**
  * \brief Open a new file decriptor for creating timer events.
  * \public \memberof Reactor
- * @return -1 on error
- * @return the file descriptor
+ * @return -1 on error.
+ * @return the file descriptor.
  */
 int reactor_make_timer(void);
 

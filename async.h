@@ -1,11 +1,12 @@
 #ifndef _ASYNC_H
 #define _ASYNC_H
 
-/** \cond */
+/** Async Pointer */
 typedef struct Async *async_p;
-/** \endcond */
 
-/** \file */
+/** \file
+ * @example test-async.c
+ */
 
 /**
  * \brief A simple thread pool utilizing POSIX threads
@@ -27,9 +28,8 @@ typedef struct Async *async_p;
 extern struct __ASYNC_API__ {
     /**
      * \brief Create a new Async object (thread pool)
-     *        a pointer using the `async_p` (Async Pointer) type.
+     *        a pointer using the Async pointer type.
      * @param threads the number of new threads to be initialized
-     * @return a pointer using the `async_p` (Async Pointer) type
      *
      * Use:
      * @code
@@ -95,8 +95,8 @@ extern struct __ASYNC_API__ {
      *   Async.finish(async);
      * @endcode
      *
-     * @return  0 on success
-     * @return -1 on error
+     * @return  0 on success.
+     * @return -1 on error.
      */
     void (*finish)(async_p);
 } Async;
