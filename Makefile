@@ -34,8 +34,14 @@ $(OUT)/%.o: %.c
 $(OUT):
 	@mkdir -p $@
 
+doc:
+	@doxygen
+
 clean:
 	$(RM) $(EXEC) $(OBJS) $(deps)
 	@rm -rf $(OUT)
+
+distclean: clean
+	rm -rf html
 
 -include $(deps)
