@@ -11,9 +11,10 @@ typedef struct Async *async_p;
 /**
  * \brief A simple thread pool utilizing POSIX threads
  *
- * It uses a combination of a pipe (for wakeup signals) and mutexes (for
- * managing the task queue) to give a basic layer of protection to any
- * server implementation.
+ * The thread pool can take any function and split it across a set number
+ * of threads. It uses a combination of a pipe (for wakeup signals) and
+ * mutexes (for managing the task queue) to give a basic layer of protection
+ * to any server implementation.
  *
  * The Async global object allows us access to the Async thread pool API. i.e.
  * @code
