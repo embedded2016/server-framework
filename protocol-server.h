@@ -1,5 +1,5 @@
-#ifndef LIB_SERVER_H
-#define LIB_SERVER_H
+#ifndef _SERVER_FRAMEWORK_H
+#define _SERVER_FRAMEWORK_H
 
 #include <unistd.h>
 #include <stdio.h>
