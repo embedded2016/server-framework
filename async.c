@@ -70,7 +70,7 @@ struct Async {
     pthread_t threads[];
 };
 
-/* Task Management - add a task and perform al tasks in queue */
+/* Task Management - add a task and perform all tasks in queue */
 
 static int async_run(async_p async, void (*task)(void *), void *arg)
 {
