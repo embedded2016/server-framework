@@ -2,7 +2,7 @@
 
 int main(void)
 {
-    void *buf = Buffer.new(0);
+    void *buf = Buffer.create(0);
 
     Buffer.destroy(buf);
 

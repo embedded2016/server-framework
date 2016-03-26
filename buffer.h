@@ -14,7 +14,7 @@
  *
  * To Create a Buffer, use:
  * @code
- *   void *buffer = Buffer.new(0);
+ *   void *buffer = Buffer.create(0);
  * @endcode
  * The offset sets a pre-sent amount for the first packet.
  *
@@ -53,7 +53,7 @@ extern const struct BufferClass {
      * The buffer object should require ~96 bytes (system dependent),
      * including the mutex object.
      */
-    void *(*new)(server_pt owner);
+    void *(*create)(server_pt owner);
 
     /**
      * \brief Clear the buffer and destroys the buffer object

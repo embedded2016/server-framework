@@ -693,7 +693,7 @@ static int srv_listen(struct ServerSettings settings)
         tout[i] = 0;
         idle[i] = 0;
         udata_map[i] = 0;
-        buffer_map[i] = Buffer.new(&srv);
+        buffer_map[i] = Buffer.create(&srv);
     }
 
     /* register signals - do this before concurrency,

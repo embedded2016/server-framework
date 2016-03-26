@@ -129,7 +129,7 @@ int is_buffer(struct Buffer *object)
 }
 
 /* create a new buffer object */
-static inline void *new_buffer(server_pt owner)
+static inline void *create_buffer(server_pt owner)
 {
     struct Buffer *buffer = malloc(sizeof(struct Buffer));
     if (!buffer) return 0;
@@ -468,7 +468,7 @@ char buffer_is_empty(void *buf)
 
 /* API gateway */
 const struct BufferClass Buffer = {
-    .new = new_buffer,
+    .create = create_buffer,
     .destroy = destroy_buffer,
     .clear = clear_buffer,
     .set_whook = set_whook,
