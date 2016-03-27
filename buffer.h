@@ -48,7 +48,8 @@
  */
 extern const struct BufferClass {
     /**
-     * \brief Create a new buffer object
+     * \brief Create a new buffer object.
+     *
      * Reserve memory for the core data and creating a mutex.
      * The buffer object should require ~96 bytes (system dependent),
      * including the mutex object.
@@ -56,7 +57,8 @@ extern const struct BufferClass {
     void *(*create)(server_pt owner);
 
     /**
-     * \brief Clear the buffer and destroys the buffer object
+     * \brief Clear the buffer and destroys the buffer object.
+     *
      * Release buffer object's core memory and the mutex associated
      * with the buffer.
      */
@@ -64,7 +66,7 @@ extern const struct BufferClass {
 
     /**
      * \brief Clear all the data in the buffer (freeing the data's memory),
-     * Close any pending files and resets the writing hook.
+     *        closing any pending files and resets the writing hook.
      */
     void (*clear)(void *buffer);
 
@@ -108,6 +110,7 @@ extern const struct BufferClass {
 
     /**
      * \brief Flush the buffer data through the socket
+     *
      * @return the number of bytes sent, if any.
      * @return -1 on error.
      */
@@ -130,6 +133,7 @@ extern const struct BufferClass {
 
     /**
      * \brief Take ownership of the data and pushes the pointer to the buffer.
+     *
      * The buffer will call `free` to deallocate the data once the data was
      * sent.
      */
@@ -137,6 +141,7 @@ extern const struct BufferClass {
 
     /**
      * \brief Create a copy of the data and pushes the copy to the buffer.
+     *
      * The data will be pushed as "next in line", meaning that no "packet"
      * or file will be interrapted in the middle (a packet is data scheduled
      * to be sent using `write`/`write_move`/etc').
@@ -145,6 +150,7 @@ extern const struct BufferClass {
 
     /**
      * \brief Take ownership of the data and pushes the pointer to the buffer.
+     *
      * The buffer will call `free` to deallocate the data once the data was
      * sent.
      *

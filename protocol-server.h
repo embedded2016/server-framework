@@ -78,7 +78,7 @@ struct Protocol {
 struct ServerSettings {
     struct Protocol *protocol; /**< the default protocol. */
     char *port; /**< the port to listen to. default to 8080. */
-    char *address; /**< the address to bind to. defaults to NULL
+    char *address; /**< the address to bind to. Default to NULL
                         (all localhost addresses). */
     /** called when the server starts, allowing for further
      * initialization, such as timed event scheduling.
@@ -96,7 +96,7 @@ struct ServerSettings {
     void (*on_idle)(struct Server *server);
 
     /** called each time a new worker thread is spawned
-     * (within the new thread).
+     *  (within the new thread).
      */
     void (*on_init_thread)(struct Server *server);
 
@@ -106,7 +106,7 @@ struct ServerSettings {
     void *udata; /**< opaque user data. */
 
     /**
-     * Set the amount of threads to be created for the server's thread-pool.
+     * Set the amount of threads to be created for the server's thread pool.
      * Default to 1 - the reactor and all callbacks will work using
      * a single working thread, allowing for event-based single threaded
      * design.
@@ -150,7 +150,9 @@ extern const struct __SERVER_API__ {
     struct ServerSettings *(*settings)(struct Server *server);
 
     /**
-     * return the adjusted capacity for any server instance on the system.
+     * \brief return the adjusted capacity for any server instance on
+     *        the system.
+     *
      * The capacity is calculating by attempting to increase the system's
      * open file limit to the maximum allowed, and then marginizing the
      * result with respect to possible memory limits and possible need for
@@ -163,8 +165,8 @@ extern const struct __SERVER_API__ {
     //@{
 
     /**
-     * Listen to a server with the following server settings (which MUST
-     * include a default protocol).
+     * \brief Listen to a server with the following server settings (which
+     *        MUST include a default protocol).
      *
      * This method blocks the current thread until the server is stopped
      * (either though a `srv_stop` function or when a SIGINT/SIGTERM is
@@ -172,10 +174,10 @@ extern const struct __SERVER_API__ {
      */
     int (*listen)(struct ServerSettings);
 
-    /** stops a specific server, closing any open connections. */
+    /** stop a specific server, closing any open connections. */
     void (*stop)(struct Server *server);
 
-    /** stops any and all server instances, closing any open connections. */
+    /** stop any and all server instances, closing any open connections. */
     void (*stop_all)(void);
 
     /** @name Socket settings and data */
@@ -196,7 +198,8 @@ extern const struct __SERVER_API__ {
 
     /**
      * Set the active protocol object for the requested file descriptor.
-     * @return -1 on error (i.e. connection closed).
+     *
+     * @return -1 on error (such as connection closed).
      * @return  0 otherwise.
      */
     int (*set_protocol)(struct Server *server,
@@ -204,21 +207,26 @@ extern const struct __SERVER_API__ {
                         struct Protocol *new_protocol);
 
     /**
-     * Retrive an opaque pointer set by `set_udata` and associated with
-     * the connection.
+     * \brief Retrive an opaque pointer set by `set_udata` and associated
+     *        with the connection.
      *
      * since no new connections are expected on fd == 0..2, it is possible
      * to store global data in these locations.
      */
     void *(*get_udata)(struct Server *server, int sockfd);
 
-    /** Set the opaque pointer to be associated with the connection.
+    /**
+     * \brief Set the opaque pointer to be associated with the connection.
+     *
      * @return the old pointer, if any.
      */
     void *(*set_udata)(struct Server *server, int sockfd, void *udata);
 
-    /** Set the timeout limit for the specified connectionl, in seconds,
-     * up to 255 seconds (the maximum allowed timeout count). */
+    /**
+     * \brief Set the timeout limit for the specified connectionl.
+     *
+     * up to 255 seconds (the maximum allowed timeout count).
+     */
     void (*set_timeout)(struct Server *server, int sockfd,
                         unsigned char timeout);
     //@}
@@ -229,6 +237,7 @@ extern const struct __SERVER_API__ {
     /**
      * \brief Attach an existing connection (fd) to the server's reactor
      *        and protocol management system.
+     *
      * So that the server can be used also to manage connection-based
      * resources asynchronously.
      */
@@ -237,14 +246,17 @@ extern const struct __SERVER_API__ {
 
     /**
      * \brief Close the connection.
+     *
      * If any data is waiting to be written, close will return immediately
      * and the connection will only be closed once all the data was sent.
      */
     void (*close)(struct Server *server, int sockfd);
 
     /**
-     * Hijack a socket (file descriptor) from the server, clearing up its
-     * resources. The control of hte socket is totally relinquished.
+     * \brief Hijack a socket (file descriptor) from the server, clearing
+     *        up its resources.
+     *
+     * The control of hte socket is totally relinquished.
      *
      * This method will block until all the data in the buffer is sent
      * before releasing control of the socket.
@@ -264,11 +276,11 @@ extern const struct __SERVER_API__ {
     //@{
 
     /**
-     * Set up the read/write hooks, allowing for transport layer extensions
-     * (i.e. SSL/TLS) or monitoring extensions.
+     * \brief Set up the read/write hooks, allowing for transport layer
+     *        extensions (such as SSL/TLS) or monitoring extensions.
      *
      * These hooks are only relevent when reading or writing from the socket
-     * using the server functions (i.e. `Server.read` and `Server.write`).
+     * using the server functions (such as  `Server.read` and `Server.write`).
      *
      * These hooks are attached to the specified socket and they are cleared
      * automatically once the connection is closed.
@@ -341,15 +353,21 @@ extern const struct __SERVER_API__ {
                               void *data, size_t len));
 
     /**
-     * Read up to `max_len` of data from a socket. the data is stored
-     * in the `buffer` and the number of bytes received is returned.
+     * \brief Read up to `max_len` of data from a socket.
+     *
+     * the data is stored in the `buffer` and the number of bytes received
+     * is returned.
+     *
      * @return -1 if an error was raised and the connection was closed.
      * @return the number of bytes written to the buffer.
      * @return 0 if no data was available.
      */
     ssize_t (*read)(server_pt srv, int sockfd, void *buffer, size_t max_len);
 
-    /** Copy and write data to the socket, managing an asyncronous buffer.
+    /**
+     * \brief Copy and write data to the socket,
+     *        managing an asyncronous buffer.
+     *
      * @return 0 on success. success means that the data is in a buffer
      *           waiting to be written. If the socket is forced to close
      *           at this point, the buffer will be destroyed (never sent).
@@ -358,8 +376,8 @@ extern const struct __SERVER_API__ {
     ssize_t (*write)(server_pt srv, int sockfd, void *data, size_t len);
 
     /**
-     * Write data to the socket, moving the data's pointer directly to
-     * the buffer.
+     * \brief Write data to the socket, moving the data's pointer directly
+     *        to the buffer.
      *
      * Once the data was written, `free` will be called to free the data's
      * memory.
@@ -368,7 +386,9 @@ extern const struct __SERVER_API__ {
      */
     ssize_t (*write_move)(server_pt srv, int sockfd, void *data, size_t len);
 
-    /** Copy and write data to the socket, managing an asyncronous buffer.
+    /**
+     * \brief Copy and write data to the socket,
+     *        managing an asyncronous buffer.
      *
      * Each call to a `write` function considers it's data atomic
      * (a single package).
@@ -383,8 +403,8 @@ extern const struct __SERVER_API__ {
                             void *data, size_t len);
 
     /**
-     * Write data to the socket, moving the data's pointer directly to
-     * the buffer.
+     * \brief Write data to the socket, moving the data's pointer directly
+     *        to the buffer.
      *
      * Once the data was written, `free` will be called to free the
      * data's memory.
@@ -402,7 +422,7 @@ extern const struct __SERVER_API__ {
                                  void *data, size_t len);
 
     /**
-     * Send a whole file as if it were a single atomic packet.
+     * \brief Send a whole file as if it were a single atomic packet.
      *
      * Once the file was sent, the `FILE *` will be closed using `fclose`.
      * The file will be buffered to the socket chunk by chunk.
@@ -414,8 +434,8 @@ extern const struct __SERVER_API__ {
     //@{
 
     /**
-     * Schedule a specific task to run asyncronously for each connection
-     * (except the origin connection).
+     * \brief Schedule a specific task to run asyncronously for
+     *        each connection (except the origin connection).
      * A NULL service identifier == all connections (all protocols).
      *
      * The task is performed within each target connection's busy "lock",
@@ -446,10 +466,11 @@ extern const struct __SERVER_API__ {
                                   int origin_fd, void *arg));
 
     /**
-     * Schedule a specific task to run for each connection (except the
-     * origin connection). The tasks will be performed sequencially,
-     * in a blocking manner. The method will only return once all the
-     * tasks were completed.
+     * \brief Schedule a specific task to run for each connection
+     *        (except the origin connection).
+     *
+     * The tasks will be performed sequencially, in a blocking manner.
+     * The method will only return once all the tasks were completed.
      * A NULL service identifier == all connections (all protocols).
      *
      * The task, although performed on each connection, will be performed
@@ -462,8 +483,9 @@ extern const struct __SERVER_API__ {
                       void *arg);
 
     /**
-     * Schedule a specific task to run asyncronously for
-     * a specific connection.
+     * \brief Schedule a specific task to run asyncronously for
+     *        a specific connection.
+     *
      * @return -1 on failure.
      * @return  0 on success (success being scheduling the task).
      *
@@ -481,8 +503,8 @@ extern const struct __SERVER_API__ {
                                     int fd, void *arg));
 
     /**
-     * Run an asynchronous task, IF threading is enabled (set the `threads`
-     * to 1 (the default) or greater).
+     * \brief Run an asynchronous task, if threading is enabled (set the
+     *        `threads` to 1 (the default) or greater).
      *
      * If threading is disabled, the current thread will perform the task
      * and return.
@@ -492,12 +514,13 @@ extern const struct __SERVER_API__ {
     int (*run_async)(struct Server *self, void task(void *), void *arg);
 
     /**
-     * Create a system timer (at the cost of 1 file descriptor) and push
-     * the timer to the reactor. The task will NOT repeat.
+     * \brief Create a system timer (at the cost of 1 file descriptor) and
+     *        push the timer to the reactor. The task will NOT repeat.
+     *
      * @return -1 on error.
      * @return the new file descriptor on succeess.
      *
-     * NOTICE: Do NOT create timers from within the on_close callback, as
+     * @note Do NOT create timers from within the on_close callback, as
      * this might block resources from being properly freed (if the timer
      * and the on_close object share the same fd number).
      */
@@ -505,13 +528,15 @@ extern const struct __SERVER_API__ {
                      void task(void *), void *arg);
 
     /**
-     * Create a system timer (at the cost of 1 file descriptor) and push
-     * the timer to the reactor. The task will repeat `repetitions` times.
-     * if `repetitions` is set to 0, task will repeat forever.
+     * \brief Create a system timer (at the cost of 1 file descriptor) and
+     *        push the timer to the reactor.
+     *
+     * The task will repeat `repetitions` times. if `repetitions` is set
+     * to 0, task will repeat forever.
      * @return -1 on error.
      * @return the new file descriptor on succeess.
      *
-     * NOTICE: Do NOT create timers from within the on_close callback, as
+     * @note Do NOT create timers from within the on_close callback, as
      * this might block resources from being properly freed (if the timer
      * and the on_close object share the same fd number).
      */

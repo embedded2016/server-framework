@@ -16,7 +16,9 @@ typedef struct Async *async_p;
  * mutexes (for managing the task queue) to give a basic layer of protection
  * to any server implementation.
  *
- * The Async global object allows us access to the Async thread pool API. i.e.
+ * The Async global object allows us access to the Async thread pool API.
+ *
+ * Use:
  * @code
  *   async_p async = Async.create(4); // 4 worker threads
  *   Async.finish(async); // signal and wait, then the object self-destructs
