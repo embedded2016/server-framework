@@ -18,7 +18,7 @@ typedef struct Async *async_p;
  *
  * The Async global object allows us access to the Async thread pool API. i.e.
  * @code
- *   async_p async = Async.new(4); // 4 worker threads
+ *   async_p async = Async.create(4); // 4 worker threads
  *   Async.finish(async); // signal and wait, then the object self-destructs
  * @endcode
  *
@@ -34,7 +34,7 @@ extern struct __ASYNC_API__ {
      *
      * Use:
      * @code
-     *   async_p async = Async.new(8);
+     *   async_p async = Async.create(8);
      * @endcode
      */
     async_p (*create)(int threads);
