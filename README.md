@@ -63,7 +63,15 @@ int main(void) {
 }
 ```
 
+
 Documentation
 -------------
 The code is heavily commented, and you can generate API documentation via
 Doxygen. Check the directory `html` for details.
+
+
+Licensing
+---------
+`server-framework` is freely redistributable under the two-clause BSD License.
+Use of this source code is governed by a BSD-style license that can be found
+in the `LICENSE` file.
