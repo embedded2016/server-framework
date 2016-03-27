@@ -58,7 +58,7 @@ struct Reactor {
     /** @name global data and settings */
     //@{
 
-    /** the time (seconds since epoch) of the last "tick" (event cycle) */
+    /** the time (seconds since epoch) of the last "tick" (event cycle). */
     time_t last_tick;
 
     /**

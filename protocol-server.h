@@ -51,9 +51,9 @@ struct Protocol {
     char *service; /**< a string to identify the protocol's service
                         such as "http". */
     void (*on_open)(struct Server *,
-                    int sockfd); /**< called when a connection is opened */
+                    int sockfd); /**< called when a connection is opened. */
     void (*on_data)(struct Server *,
-                    int sockfd); /**< called when a data is available */
+                    int sockfd); /**< called when a data is available. */
     void (*on_ready)(struct Server *,
                      int sockfd); /**< called when the socket is ready
                                        to be written to. */
@@ -62,10 +62,10 @@ struct Protocol {
                                           down, but before closing the
                                           connection. */
     void (*on_close)(struct Server *,
-                     int sockfd); /**< called when connection was closed */
+                     int sockfd); /**< called when connection was closed. */
     void (*ping)(struct Server *,
                  int sockfd); /**< called when the connection's timeout
-                                   was reached */
+                                   was reached. */
 };
 
 /**
@@ -79,7 +79,7 @@ struct ServerSettings {
     struct Protocol *protocol; /**< the default protocol. */
     char *port; /**< the port to listen to. default to 8080. */
     char *address; /**< the address to bind to. defaults to NULL
-                        (all localhost addresses) */
+                        (all localhost addresses). */
     /** called when the server starts, allowing for further
      * initialization, such as timed event scheduling.
      * This will be called seperately for every process.
@@ -102,8 +102,8 @@ struct ServerSettings {
 
     char *busy_msg; /**< C-style string indicating the server is busy.
                          default to NULL, which means simple disconnection
-                         without messages */
-    void *udata; /**< opaque user data */
+                         without messages. */
+    void *udata; /**< opaque user data. */
 
     /**
      * Set the amount of threads to be created for the server's thread-pool.
@@ -140,17 +140,17 @@ extern const struct __SERVER_API__ {
     /** @name Server settings and objects */
     //@{
 
-    /** return the originating process pid */
+    /** return the originating process pid. */
     pid_t (*root_pid)(struct Server *server);
 
-    /** Allow direct access to the reactor object */
+    /** Allow direct access to the reactor object. */
     struct Reactor *(*reactor)(struct Server *server);
 
-    /** Allow direct access to the server's original settings */
+    /** Allow direct access to the server's original settings. */
     struct ServerSettings *(*settings)(struct Server *server);
 
     /**
-     * @return the adjusted capacity for any server instance on the system.
+     * return the adjusted capacity for any server instance on the system.
      * The capacity is calculating by attempting to increase the system's
      * open file limit to the maximum allowed, and then marginizing the
      * result with respect to possible memory limits and possible need for
@@ -189,7 +189,9 @@ extern const struct __SERVER_API__ {
     unsigned char (*is_busy)(struct Server *server, int sockfd);
 
     /**
-     * Retrive the active protocol object for the requested file descriptor */
+     * Retrive the active protocol object for the requested
+     * file descriptor.
+     */
     struct Protocol *(*get_protocol)(struct Server*server, int sockfd);
 
     /**
@@ -225,9 +227,10 @@ extern const struct __SERVER_API__ {
     //@{
 
     /**
-     * Attach an existing connection (fd) to the server's reactor and
-     * protocol management system, so that the server can be used also
-     * to manage connection-based resources asynchronously
+     * \brief Attach an existing connection (fd) to the server's reactor
+     *        and protocol management system.
+     * So that the server can be used also to manage connection-based
+     * resources asynchronously.
      */
     int (*attach)(struct Server *server, int sockfd,
 	              struct Protocol *protocol);
@@ -248,12 +251,12 @@ extern const struct __SERVER_API__ {
      */
     int (*hijack)(struct Server *server, int sockfd);
 
-    /** Count the number of connections for the specified protocol
+    /** Count the number of connections for the specified protocol.
      * (NULL = all protocols).
      */
     long (*count)(struct Server *server, char *service);
 
-    /** Manipulate a socket, reseting its timeout counter */
+    /** Manipulate a socket, reseting its timeout counter. */
     void (*touch)(struct Server *server, int sockfd);
     //@}
 
