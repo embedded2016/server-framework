@@ -101,6 +101,7 @@ int main(void)
     if (errno)
         perror("starting. last error was");
 
+    freeaddrinfo(servinfo);
     /* when everything is ready, call the reactor */
     reactor_init(&r);
     reactor_add(&r, srvfd);
