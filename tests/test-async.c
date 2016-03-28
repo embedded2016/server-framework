@@ -73,5 +73,6 @@ int main(void)
     Async.wait(async);
     clock_gettime(CLOCK_REALTIME, &now);
     fprintf(stderr, "# elapsed time: (%lf) ms\n", time_diff(start, now));
+    free(async);
     return 0;
 }
